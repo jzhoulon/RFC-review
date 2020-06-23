@@ -122,7 +122,7 @@ The section below shows some pseudo code to introduce some changes to the Tensor
      host_to_device_stream_ = new se::Stream(stream_executor_);
      host_to_device_stream_->**Init**();
      ...
-   }  *// create StreamExecutor*
+   }  // create StreamExecutor
 ```
 3. PluggableDevicePlatform is responsible for the StreamExecutor creation. It creates an SE_StreamExecutor and SE_Device object through create_stream_executor and create_device function handle which are registered in the SE_Platform. Then PluggableDeviceExecutor is then constructed with SE_StreamExecutor and SE_Device object.   
 ```cpp
@@ -141,34 +141,34 @@ Tensorflow proper needs to be extended to support a new virtual device (Pluggabl
 
 Two sets of classes need to be defined in Tensorflow proper. 
 
-Set 1: PluggableDevice related classes 
-   class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
-   class PluggableDeviceFactory: a device factory to create the PluggableDevice
-   class PluggableDeviceBFCAllocator: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
-   class PluggableDeviceAllocator: an allocator that wraps a PluggableDevice allocator.
-   class PluggableDeviceHostAllocator: allocator for pinned CPU RAM that is made known to PluggableDevice for the purpose of efficient DMA with PluggableDevice.
-   class PluggableDeviceEventMgr: an object to keep track of pending Events in the StreamExecutor streams.
-   class PluggableDeviceContext: a wrapper of pluggable device specific context that can be passed to OpKernels.
-Set 2: PluggableDevicePlatform related classes 
-   class PluggableDevicePlatform : PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SE_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
-   class PluggableDeviceExecutor: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SE_StreamExecutor* executor_ and SE_Device* device_ whose member can be accessed in both Tensorflow proper and device plugins.
-   class PluggableDeviceStream : wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SE_Stream which is treated as an opaque type to Tensorflow,  whose structure is created by the device plugin.  
-   class PluggableDeviceTimer : wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
-   class PluggableDeviceEvent : wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
+* Set 1: PluggableDevice related classes 
+   * class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
+   * class PluggableDeviceFactory: a device factory to create the PluggableDevice
+   * class PluggableDeviceBFCAllocator: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
+   * class PluggableDeviceAllocator: an allocator that wraps a PluggableDevice allocator.
+   * class PluggableDeviceHostAllocator: allocator for pinned CPU RAM that is made known to PluggableDevice for the purpose of efficient DMA with PluggableDevice.
+   * class PluggableDeviceEventMgr: an object to keep track of pending Events in the StreamExecutor streams.
+   * class PluggableDeviceContext: a wrapper of pluggable device specific context that can be passed to OpKernels.
+* Set 2: PluggableDevicePlatform related classes 
+   * class PluggableDevicePlatform : PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SE_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
+   * class PluggableDeviceExecutor: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SE_StreamExecutor* executor_ and SE_Device* device_ whose member can be accessed in both Tensorflow proper and device plugins.
+   * class PluggableDeviceStream : wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SE_Stream which is treated as an opaque type to Tensorflow,  whose structure is created by the device plugin.  
+   * class PluggableDeviceTimer : wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
+   * class PluggableDeviceEvent : wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
 ### Plugin
 
 Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
-  SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
+*  SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
 ```cpp
-  SE_StreamExecutor* create_stream_executor() {
-    SE_StreamExecutor* se_nfs = new SE_StreamExecutor();
-    se->memcpy_from_host = my_device_memory_from_host_function;
-    se->allocate = my_allocate_function;
-    …
-  }//Init device
+   SE_StreamExecutor* create_stream_executor() {
+     SE_StreamExecutor* se_nfs = new SE_StreamExecutor();
+     se->memcpy_from_host = my_device_memory_from_host_function;
+     se->allocate = my_allocate_function;
+     …
+   }//Init device
 ```
-  SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
+* SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
 ```cpp
   SE_Device* create_device(SE_Options* options, TF_Status* status) {
     SE_Device* se = new SE_Device();
@@ -179,11 +179,11 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
 ```
 * SE_Stream is defined in plugin and treated as an opaque struct in Tensorflow proper. 
 ```cpp
-void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
-  *stream = new SE_Stream_st();
-  (*stream)->stream_handle = create_my_stream_handle(executor);
-  ..
-}
+  void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
+    *stream = new SE_Stream_st();
+    (*stream)->stream_handle = create_my_stream_handle(executor);
+    ..
+  }
 ```
 
 **## PluggableDevice kernel registration **
@@ -191,7 +191,7 @@ void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
 Tensorflow proper defines a new device_type named DEVICE_PLUGGABLE for PluggableDevice.This device_type is used for the kernel registration and dispatch. Plugin needs to register its kernel implementation with DEVICE_PLUGGABLE type.
-
+```cpp
 void InitPlugin() {
   TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", DEVICE_PLUGGABLE,
       &Conv_Create, &Conv_Compute, &Conv_Delete);
@@ -200,11 +200,11 @@ void InitPlugin() {
   if (TF_GetCode(status) != TF_OK) { /* handle errors */ }
   TF_DeleteStatus(status);
 }
-
+```
 **## Using stream inside PluggableDevice kernel **
 
 The following code shows a convolution kernel implementation using the stream handle. The streams are created during the pluggable device creation. The placer decides which device to use for each OP in the graph. Then the streams associated with the device are used to construct the OpKernelContext for the op computation during the graph execution.
-
+```cpp
 void Conv_Compute(TF_OpKernelContext*) {
   TF_GetInput(context, input_index, &input, &status);
   TF_GetInput(context, filter_index, &filter, &status);
@@ -213,7 +213,7 @@ void Conv_Compute(TF_OpKernelContext*) {
   auto native_stream = static_cast<native_stream_type>(se_stream->stream_handle);
   my_conv_impl(input, filter, output, native_stream);
 }
-
+```
 Kernel and op registration and implementation API [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md) needs to be extended to retrieve streams/device context from the TF_OpKernelContext, besides inputs and outputs. 
 
 ### **Alternatives Considered**

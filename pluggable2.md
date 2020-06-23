@@ -48,7 +48,8 @@ The RFC describes the mechanism of extending the tensorflow device class hierarc
 <div align="center">
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/design_overview.png" />
 </div>
-* PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream,  and memory.  PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in[ RFC](https://github.com/tensorflow/community/pull/257)). 
+
+* PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream, and memory. PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
 * PluggableDevice Backend is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
 
@@ -58,6 +59,7 @@ With the RFC, existing tensorflow GPU programs can run on a plugged device witho
 <div align="center">
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/gpu_example.png">
 </div>
+
 **Device Discovery**
 
 Upon initialization of Tensorflow, it uses platform independent LoadLibrary() to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 

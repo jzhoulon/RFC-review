@@ -169,8 +169,8 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
   }//Init device
 ```
   SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
-'''cpp
-  SE_Device* **create_device**(SE_Options* options, TF_Status* status) {
+```cpp
+  SE_Device* create_device(SE_Options* options, TF_Status* status) {
     SE_Device* se = new SE_Device();
     se->device_handle = get_my_device_handle();
     ...
@@ -178,13 +178,13 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
   }
 ```
 * SE_Stream is defined in plugin and treated as an opaque struct in Tensorflow proper. 
-'''cpp
+```cpp
 void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
   *stream = new SE_Stream_st();
   (*stream)->stream_handle = create_my_stream_handle(executor);
   ..
 }
-'''
+```
 
 **## PluggableDevice kernel registration **
 

@@ -178,16 +178,13 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
   }
 ```
 * SE_Stream is defined in plugin and treated as an opaque struct in Tensorflow proper. 
-
-**void** **create_stream**(SE_Device* executor, SE_Stream* stream, TF_Status*) {
-
+'''cpp
+void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
   *stream = new SE_Stream_st();
-
   (*stream)->stream_handle = create_my_stream_handle(executor);
-
   ..
-
 }
+'''
 
 **## PluggableDevice kernel registration **
 
@@ -195,40 +192,26 @@ This RFC shows an example of registering kernels for PluggableDevice. Kernel and
 
 Tensorflow proper defines a new device_type named DEVICE_PLUGGABLE for PluggableDevice.This device_type is used for the kernel registration and dispatch. Plugin needs to register its kernel implementation with DEVICE_PLUGGABLE type.
 
-**void** **InitPlugin**() {
-
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", **DEVICE_PLUGGABLE**,
-
+void InitPlugin() {
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", DEVICE_PLUGGABLE,
       &Conv_Create, &Conv_Compute, &Conv_Delete);
-
   TF_Status* status = TF_NewStatus();
-
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
-
-  if (**TF_GetCode**(status) != TF_OK) { /* handle errors */ }
-
+  if (TF_GetCode(status) != TF_OK) { /* handle errors */ }
   TF_DeleteStatus(status);
-
 }
 
 **## Using stream inside PluggableDevice kernel **
 
 The following code shows a convolution kernel implementation using the stream handle. The streams are created during the pluggable device creation. The placer decides which device to use for each OP in the graph. Then the streams associated with the device are used to construct the OpKernelContext for the op computation during the graph execution.
 
-**void** **Conv_Compute**(TF_OpKernelContext*) {
-
+void Conv_Compute(TF_OpKernelContext*) {
   TF_GetInput(context, input_index, &input, &status);
-
   TF_GetInput(context, filter_index, &filter, &status);
-
   auto output = TF_AllocateOutput(context, output_index, TF_Float32, dims, num_dims, len, status);
-
   SE_Stream se_stream = TF_GetStream(TF_OpKernelContext);
-
   auto native_stream = static_cast<native_stream_type>(se_stream->stream_handle);
-
   my_conv_impl(input, filter, output, native_stream);
-
 }
 
 Kernel and op registration and implementation API [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md) needs to be extended to retrieve streams/device context from the TF_OpKernelContext, besides inputs and outputs. 

@@ -62,39 +62,55 @@ The stream executor platform must be registered with the name "PluggableDevice".
 
 See below code which is an example of registering a PluggableDevice platform with StreamExecutor C API:
 
-<table>
-  <tr>
-    <td>```cpp
-void RegisterPluggableDevicePlatform() {
+```cpp
+
+**void** **RegisterPluggableDevicePlatform**() {
+
   static plugin_id_value = 123;
+
   SE_PlatformId id;
+
   id.id = &plugin_id_value;
+
   int visible_device_count = get_plugin_device_count;
 
   SE_Platform* custom_platform = SE_NewPlatform(
+
      id, visible_device_count,
+
      create_device, create_stream_executor,
+
      delete_device, delete_stream_executor);
 
   TF_Status* status = TF_NewStatus();
+
   std::string name = "PluggableDevice";
+
   SE_RegisterPlatform(
-     name.c_str(), name.size(),
+
+     name.**c_str**(), name.**size**(),
+
      custom_platform,
+
      status);
+
 }
+
 ```
 
-Use static initialization to register the new platform:
+Use **static** initialization to **register** the **new** platform:
 
 ```cpp
-static bool IsMyCustomPlatformRegistered = []() {
- RegisterMyCustomPlatform();
- return true;
-}();</td>
-  </tr>
-</table>
 
+**static** **bool** IsMyCustomPlatformRegistered = []() {
+
+ RegisterMyCustomPlatform();
+
+ return true;
+
+}();
+
+```
 
 **Device Creation**
 
@@ -112,53 +128,61 @@ The section below shows some pseudo code to introduce some changes to the Tensor
 
 1. PluggableDeviceFactory creates and initializes a set of pluggable devices when the session is created.  
 
-<table>
-  <tr>
-    <td>PluggableDeviceFactory::CreateDevices(SessionOptions& options, const string& name_prefix, std::vector<std::unique_ptr<Device>>* devices) {
-  for (int i = 0; i < options.device_count(); i++) {
-    PluggableDevice pluggable_device 
-    = CreatePluggableDevice(options,i); //set allocator
-    pluggable_device->Init(options);
-    devices.push_back(std::move(pluggable_device));
-  }
-}</td>
-  </tr>
-</table>
+**PluggableDeviceFactory::CreateDevices**(SessionOptions& options, const string& name_prefix, std::vector<std::unique_ptr<Device>>* devices) {
 
+  for (int i = 0; i < options.**device_count**(); i++) {
+
+    PluggableDevice pluggable_device 
+
+    = CreatePluggableDevice(options,i); //set allocator
+
+    pluggable_device->**Init**(options);
+
+    devices.**push_back**(**std::move**(pluggable_device));
+
+  }
+
+}
 
 2. PluggableDevice object binds a StreamExecutor and creates a set of Streams during the initialization.Streams include one compute stream and several memory copy streams.
 
-<table>
-  <tr>
-    <td>PluggableDevice::Init(SessionOption& options) {  
- se::Platform* platform= se::MultiPlatformManager::
-                         PlatformWithName("PluggableDevice");
- stream_executor_ = platform->ExecutorForDevice(pluggable_dev_id_);
- compute_stream_ = new se::Stream(stream_executor_);
- compute_stream_->Init();
- host_to_device_stream_ = new se::Stream(stream_executor_);
- host_to_device_stream_->Init();
- ...
-}  // create StreamExecutor</td>
-  </tr>
-</table>
+**PluggableDevice::Init**(SessionOption& options) {  
 
+ se::Platform* platform= se::MultiPlatformManager::
+
+                         PlatformWithName("PluggableDevice");
+
+ stream_executor_ = platform->**ExecutorForDevice**(pluggable_dev_id_);
+
+ compute_stream_ = new se::Stream(stream_executor_);
+
+ compute_stream_->**Init**();
+
+ host_to_device_stream_ = new se::Stream(stream_executor_);
+
+ host_to_device_stream_->**Init**();
+
+ ...
+
+}  *// create StreamExecutor*
 
 3.  PluggableDevicePlatform is responsible for the StreamExecutor creation. It creates an SE_StreamExecutor and SE_Device object through create_stream_executor and create_device function handle which are registered in the SE_Platform. Then PluggableDeviceExecutor is then constructed with SE_StreamExecutor and SE_Device object.   
 
-<table>
-  <tr>
-    <td>PluggableDevicePlaform::ExeutorForDevice(int device_id） {
-  auto config = get_plugin_config(device_id);
-  SE_Options* se_option = get_se_option(device_id);
-  SE_StreamExecutor* se= platform_->create_stream_executor();
-  SE_Device* sd = platform_->create_device(se_options)
-  auto executor = absl::make_unique<StreamExecutor>(this, absl::make_unique<PluggableDeviceExecutor>(config, se, sd));
-  return std::move(executor);
-}</td>
-  </tr>
-</table>
+**PluggableDevicePlaform::ExeutorForDevice**(int device_id） {
 
+  auto config = get_plugin_config(device_id);
+
+  SE_Options* se_option = get_se_option(device_id);
+
+  SE_StreamExecutor* se= platform_->**create_stream_executor**();
+
+  SE_Device* sd = platform_->**create_device**(se_options)
+
+  auto executor = absl::make_unique<StreamExecutor>(this, absl::make_unique<PluggableDeviceExecutor>(config, se, sd));
+
+  **return** std::move(executor);
+
+}
 
 **###Tensorflow Proper**
 
@@ -200,44 +224,43 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
 
 * SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
 
-<table>
-  <tr>
-    <td>SE_StreamExecutor* create_stream_executor() {
-  SE_StreamExecutor* se_nfs = new SE_StreamExecutor();
-  se->memcpy_from_host = my_device_memory_from_host_function;
-  se->allocate = my_allocate_function;
-  …
-}//Init device</td>
-  </tr>
-</table>
+SE_StreamExecutor* **create_stream_executor**() {
 
+  SE_StreamExecutor* se_nfs = new SE_StreamExecutor();
+
+  se->memcpy_from_host = my_device_memory_from_host_function;
+
+  se->allocate = my_allocate_function;
+
+  …
+
+}*//Init device*
 
 * SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
 
-<table>
-  <tr>
-    <td>SE_Device* create_device(SE_Options* options, TF_Status* status) {
-  SE_Device* se = new SE_Device();
-  se->device_handle = get_my_device_handle();
-  ...
-  return se;
-}</td>
-  </tr>
-</table>
+SE_Device* **create_device**(SE_Options* options, TF_Status* status) {
 
+  SE_Device* se = new SE_Device();
+
+  se->device_handle = get_my_device_handle();
+
+  ...
+
+  return se;
+
+}
 
 * SE_Stream is defined in plugin and treated as an opaque struct in Tensorflow proper. 
 
-<table>
-  <tr>
-    <td>void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
-  *stream = new SE_Stream_st();
-  (*stream)->stream_handle = create_my_stream_handle(executor);
-  ..
-}</td>
-  </tr>
-</table>
+**void** **create_stream**(SE_Device* executor, SE_Stream* stream, TF_Status*) {
 
+  *stream = new SE_Stream_st();
+
+  (*stream)->stream_handle = create_my_stream_handle(executor);
+
+  ..
+
+}
 
 **## PluggableDevice kernel registration **
 
@@ -245,39 +268,43 @@ This RFC shows an example of registering kernels for PluggableDevice. Kernel and
 
 Tensorflow proper defines a new device_type named DEVICE_PLUGGABLE for PluggableDevice.This device_type is used for the kernel registration and dispatch. Plugin needs to register its kernel implementation with DEVICE_PLUGGABLE type.
 
-<table>
-  <tr>
-    <td>void InitPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", DEVICE_PLUGGABLE,
-      &Conv_Create, &Conv_Compute, &Conv_Delete);
-  TF_Status* status = TF_NewStatus();
-  TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
-  if (TF_GetCode(status) != TF_OK) { /* handle errors */ }
-  TF_DeleteStatus(status);
-}</td>
-  </tr>
-</table>
+**void** **InitPlugin**() {
 
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", **DEVICE_PLUGGABLE**,
+
+      &Conv_Create, &Conv_Compute, &Conv_Delete);
+
+  TF_Status* status = TF_NewStatus();
+
+  TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
+
+  if (**TF_GetCode**(status) != TF_OK) { /* handle errors */ }
+
+  TF_DeleteStatus(status);
+
+}
 
 **## Using stream inside PluggableDevice kernel **
 
 The following code shows a convolution kernel implementation using the stream handle. The streams are created during the pluggable device creation. The placer decides which device to use for each OP in the graph. Then the streams associated with the device are used to construct the OpKernelContext for the op computation during the graph execution.
 
-<table>
-  <tr>
-    <td>void Conv_Compute(TF_OpKernelContext*) {
-  TF_GetInput(context, input_index, &input, &status);
-  TF_GetInput(context, filter_index, &filter, &status);
-  auto output = TF_AllocateOutput(context, output_index, TF_Float32, dims, num_dims, len, status);
-  SE_Stream se_stream = TF_GetStream(TF_OpKernelContext);
-  auto native_stream = static_cast<native_stream_type>(se_stream->stream_handle);
-  my_conv_impl(input, filter, output, native_stream);
-}
-Kernel and op registration and implementation API RFC needs to be extended to retrieve streams/device context from the TF_OpKernelContext, besides inputs and outputs. 
-</td>
-  </tr>
-</table>
+**void** **Conv_Compute**(TF_OpKernelContext*) {
 
+  TF_GetInput(context, input_index, &input, &status);
+
+  TF_GetInput(context, filter_index, &filter, &status);
+
+  auto output = TF_AllocateOutput(context, output_index, TF_Float32, dims, num_dims, len, status);
+
+  SE_Stream se_stream = TF_GetStream(TF_OpKernelContext);
+
+  auto native_stream = static_cast<native_stream_type>(se_stream->stream_handle);
+
+  my_conv_impl(input, filter, output, native_stream);
+
+}
+
+Kernel and op registration and implementation API [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md) needs to be extended to retrieve streams/device context from the TF_OpKernelContext, besides inputs and outputs. 
 
 ### **Alternatives Considered**
 

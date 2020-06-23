@@ -90,8 +90,8 @@ void RegisterPluggableDevicePlatform() {
 ```
 Use static initialization to register the new platform:
 ```cpp
-static bool IsMyCustomPlatformRegistered = []() {
- RegisterMyCustomPlatform();
+static bool IsPluggableDevicePlatformRegistered = []() {
+ RegisterPluggablePlatform();
  return true;
 }();
 

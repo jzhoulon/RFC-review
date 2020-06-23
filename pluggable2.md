@@ -57,13 +57,9 @@ With the RFC, existing tensorflow GPU programs can run on a plugged device witho
 Upon initialization of Tensorflow, it uses platform independent LoadLibrary() to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 
 
 During the plugin library initialization, it calls the SE_ReigsterPlatform() API to register the stream executor platform (SE_Platform struct) to Tensorflow proper. The SE_ReigsterPlatform() API is a callback API, part of StreamExecutor C API, which passes necessary information to Tensorflow proper to instantiate a stream executor platform (se::platform class) and register to a global object MultiPlatformManager. 
-
 The stream executor platform must be registered with the name "PluggableDevice".  
-
 See below code which is an example of registering a PluggableDevice platform with StreamExecutor C API:
-
 ```cpp
-
 void RegisterPluggableDevicePlatform() {
   static plugin_id_value = 123;
   SE_PlatformId id;
@@ -84,9 +80,7 @@ void RegisterPluggableDevicePlatform() {
 ```
 
 Use static initialization to register the new platform:
-
 ```cpp
-
 static bool IsMyCustomPlatformRegistered = []() {
  RegisterMyCustomPlatform();
  return true;
@@ -141,14 +135,14 @@ The section below shows some pseudo code to introduce some changes to the Tensor
     return std::move(executor);
    }
 ```
-###Tensorflow Proper
+### Tensorflow Proper
 
 Tensorflow proper needs to be extended to support a new virtual device (PluggableDevice) to represent a set of new third-party devices and a new stream executor platform (PluggableDevicePlatform) to create the device and related resources with the information registered from plugin. 
 
 Two sets of classes need to be defined in Tensorflow proper. 
 
 Set 1: PluggableDevice related classes 
-   class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE. 
+   *class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.*
    class PluggableDeviceFactory: a device factory to create the PluggableDevice
    class PluggableDeviceBFCAllocator: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
    class PluggableDeviceAllocator: an allocator that wraps a PluggableDevice allocator.
@@ -162,7 +156,7 @@ Set 2: PluggableDevicePlatform related classes
    class PluggableDeviceTimer : wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    class PluggableDeviceEvent : wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
-###Plugin
+### Plugin
 
 Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
   SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
@@ -172,7 +166,7 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
     se->memcpy_from_host = my_device_memory_from_host_function;
     se->allocate = my_allocate_function;
     …
-  }*//Init device*
+  }//Init device
 ```
   SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
 '''cpp

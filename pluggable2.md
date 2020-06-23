@@ -26,7 +26,7 @@
 
 ## **Objective**
 
-Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing the code.  Users only need to install a dynamic library in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the library. 
+Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing the code.  Users only need to install a shared library in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the library. 
 
 This RFC is based on the Modular Tensorflow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the Tensorflow design to plugin capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
@@ -49,11 +49,11 @@ This RFC describes the mechanism of extending the tensorflow device class hierar
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/design_overview.png" />
 </div>
 
-* `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s device, stream, and memory.
+* `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s key abstractions like stream, memory and event.
 
 * `PluggableDeviceExecutor` implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
-* `PluggableDevice Backend` is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
+* `PluggableDevice Backend` is inside the TF plugin, which implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared library is loaded. 
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 
@@ -99,7 +99,7 @@ static bool IsPluggableDevicePlatformRegistered = []() {
 
 ### Device Creation
 
-`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs run on a new device without user changing the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
+`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs run on a new device without user changing the most of the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
 ```cpp
    REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
    REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU

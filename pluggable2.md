@@ -42,7 +42,7 @@ This allows tensorflow to transparently run tensorflow programs on new devices, 
 
 ## **Design Proposal**
 
-**Design Overview**
+###Design Overview
 
 The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
 <div align="center">
@@ -60,7 +60,7 @@ With the RFC, existing tensorflow GPU programs can run on a plugged device witho
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/gpu_example.png">
 </div>
 
-**Device Discovery**
+###Device Discovery
 
 Upon initialization of Tensorflow, it uses platform independent LoadLibrary() to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 
 
@@ -95,7 +95,7 @@ static bool IsMyCustomPlatformRegistered = []() {
 
 ```
 
-**Device Creation**
+###Device Creation
 
 PluggableDeviceFactory is introduced to create the PluggableDevice, following the LocalDevice design pattern. To support existing GPU programs run on a new device without user changing the code , PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU. 
 ```cpp
@@ -142,7 +142,7 @@ The section below shows some pseudo code to introduce some changes to the Tensor
     return std::move(executor);
    }
 ```
-### Tensorflow Proper
+**Tensorflow Proper**
 
 Tensorflow proper needs to be extended to support a new virtual device (PluggableDevice) to represent a set of new third-party devices and a new stream executor platform (PluggableDevicePlatform) to create the device and related resources with the information registered from plugin. 
 
@@ -163,7 +163,7 @@ Two sets of classes need to be defined in Tensorflow proper.
    * class PluggableDeviceTimer : wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    * class PluggableDeviceEvent : wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
-### Plugin
+**Plugin**
 
 Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
 *  SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
@@ -193,7 +193,7 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
   }
 ```
 
-**## PluggableDevice kernel registration **
+###PluggableDevice kernel registration
 
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
@@ -208,7 +208,7 @@ void InitPlugin() {
   TF_DeleteStatus(status);
 }
 ```
-**## Using stream inside PluggableDevice kernel **
+### Using stream inside PluggableDevice kernel
 
 The following code shows a convolution kernel implementation using the stream handle. The streams are created during the pluggable device creation. The placer decides which device to use for each OP in the graph. Then the streams associated with the device are used to construct the OpKernelContext for the op computation during the graph execution.
 ```cpp

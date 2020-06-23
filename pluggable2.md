@@ -44,7 +44,7 @@ This allows tensorflow to transparently run tensorflow programs on new devices, 
 
 ### Design Overview
 
-The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
+This RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
 <div align="center">
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/design_overview.png" />
 </div>

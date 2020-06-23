@@ -42,7 +42,7 @@ This allows tensorflow to transparently run tensorflow programs on new devices, 
 
 ## **Design Proposal**
 
-###Design Overview
+### Design Overview
 
 The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
 <div align="center">
@@ -60,7 +60,7 @@ With the RFC, existing tensorflow GPU programs can run on a plugged device witho
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/gpu_example.png">
 </div>
 
-###Device Discovery
+### Device Discovery
 
 Upon initialization of Tensorflow, it uses platform independent LoadLibrary() to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 
 
@@ -95,7 +95,7 @@ static bool IsMyCustomPlatformRegistered = []() {
 
 ```
 
-###Device Creation
+### Device Creation
 
 PluggableDeviceFactory is introduced to create the PluggableDevice, following the LocalDevice design pattern. To support existing GPU programs run on a new device without user changing the code , PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU. 
 ```cpp
@@ -193,7 +193,7 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
   }
 ```
 
-###PluggableDevice kernel registration
+### PluggableDevice kernel registration
 
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 

@@ -44,11 +44,12 @@ This allows tensorflow to transparently run tensorflow programs on new devices, 
 
 **Design Overview**
 
-The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1. PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream,  and memory.  PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in[ RFC](https://github.com/tensorflow/community/pull/257)). 
+The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1. 
+*PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream,  and memory.  PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in[ RFC](https://github.com/tensorflow/community/pull/257)). 
 
-PluggableDevice Backend is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
+*PluggableDevice Backend is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
 
-The pluggable device mechanism contains device discovery and creation process which creates a PluggableDevice object and PluggableDeviceExecutor object for each PluggableDevice Backend. 
+*The pluggable device mechanism contains device discovery and creation process which creates a PluggableDevice object and PluggableDeviceExecutor object for each PluggableDevice Backend. 
 
 With the RFC, existing tensorflow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of Tensorflow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 
@@ -78,7 +79,6 @@ void RegisterPluggableDevicePlatform() {
 }
 
 ```
-
 Use static initialization to register the new platform:
 ```cpp
 static bool IsMyCustomPlatformRegistered = []() {
@@ -88,7 +88,7 @@ static bool IsMyCustomPlatformRegistered = []() {
 
 ```
 
-Device Creation
+**Device Creation**
 
 PluggableDeviceFactory is introduced to create the PluggableDevice, following the LocalDevice design pattern. To support existing GPU programs run on a new device without user changing the code , PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU. 
 
@@ -142,7 +142,7 @@ Tensorflow proper needs to be extended to support a new virtual device (Pluggabl
 Two sets of classes need to be defined in Tensorflow proper. 
 
 Set 1: PluggableDevice related classes 
-   *class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.*
+   class PluggableDevice : a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
    class PluggableDeviceFactory: a device factory to create the PluggableDevice
    class PluggableDeviceBFCAllocator: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
    class PluggableDeviceAllocator: an allocator that wraps a PluggableDevice allocator.

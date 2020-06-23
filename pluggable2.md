@@ -144,12 +144,13 @@ The section below shows some pseudo code to introduce some changes to the Tensor
     return std::move(executor);
    }
 ```
-**Tensorflow Proper**
+####Tensorflow Proper
 
 Tensorflow proper needs to be extended to support a new virtual device (PluggableDevice) to represent a set of new third-party devices and a new stream executor platform (PluggableDevicePlatform) to create the device and related resources with the information registered from plugin. 
 
 Two sets of classes need to be defined in Tensorflow proper. 
 * Set 1: PluggableDevice related classes 
+<table><tr><td cgcolor=#FF00FF>
    * class **PluggableDevice**: a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
    * class **PluggableDeviceFactory**: a device factory to create the PluggableDevice
    * class **PluggableDeviceBFCAllocator**: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
@@ -157,6 +158,7 @@ Two sets of classes need to be defined in Tensorflow proper.
    * class **PluggableDeviceHostAllocator**: allocator for pinned CPU RAM that is made known to PluggableDevice for the purpose of efficient DMA with PluggableDevice.
    * class **PluggableDeviceEventMgr**: an object to keep track of pending Events in the StreamExecutor streams.
    * class **PluggableDeviceContext**: a wrapper of pluggable device specific context that can be passed to OpKernels.
+</td></tr></table>
 * Set 2: PluggableDevicePlatform related classes 
    * class **PluggableDevicePlatform**: PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SE_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
    * class **PluggableDeviceExecutor**: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SE_StreamExecutor* executor_ and SE_Device* device_ whose member can be accessed in both Tensorflow proper and device plugins.
@@ -164,7 +166,8 @@ Two sets of classes need to be defined in Tensorflow proper.
    * class **PluggableDeviceTimer**: wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    * class **PluggableDeviceEvent**: wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
-**Plugin**
+####Plugin
+
 Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
 *  SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
 ```cpp

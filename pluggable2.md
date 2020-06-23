@@ -49,13 +49,13 @@ This RFC describes the mechanism of extending the tensorflow device class hierar
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/design_overview.png" />
 </div>
 
-* `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream, and memory.
+* `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s device, stream, and memory.
 
 * `PluggableDeviceExecutor` implements StreamExecutor and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
 * `PluggableDevice Backend` is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
 
-The pluggable device mechanism contains device discovery and creation process which creates a PluggableDevice object and PluggableDeviceExecutor object for each PluggableDevice Backend. 
+The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 
 With the RFC, existing tensorflow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of Tensorflow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 <div align="center">
@@ -99,7 +99,7 @@ static bool IsMyCustomPlatformRegistered = []() {
 
 ### Device Creation
 
-`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the `LocalDevice` design pattern. To support existing GPU programs run on a new device without user changing the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
+`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs run on a new device without user changing the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
 ```cpp
    REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
    REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU

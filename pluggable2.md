@@ -51,7 +51,7 @@ This RFC describes the mechanism of extending the tensorflow device class hierar
 
 * `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s device, stream, and memory.
 
-* `PluggableDeviceExecutor` implements StreamExecutor and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
+* `PluggableDeviceExecutor` implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
 * `PluggableDevice Backend` is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
 

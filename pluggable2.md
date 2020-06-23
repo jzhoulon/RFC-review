@@ -46,7 +46,7 @@ This allows tensorflow to transparently run tensorflow programs on new devices, 
 
 The RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
 <div align="center">
-<img src="https://github.com/jzhoulon/RFC-review/blob/master/image1.png" height=100% width=100%/>
+<img src="https://github.com/jzhoulon/RFC-review/blob/master/image1.png" />
 </div>
 * PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream,  and memory.  PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in[ RFC](https://github.com/tensorflow/community/pull/257)). 
 

@@ -93,10 +93,10 @@ static bool IsMyCustomPlatformRegistered = []() {
 **Device Creation**
 
 PluggableDeviceFactory is introduced to create the PluggableDevice, following the LocalDevice design pattern. To support existing GPU programs run on a new device without user changing the code , PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU. 
-
+```cpp
    REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
    REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU
-
+```
 When a session is created, PluggableDeviceFactory creates a PluggableDevice object for the plugin device. During the initialization of the PluggableDevice, a global object MultiPlatformManager will find its se::platform through its platform name: "PluggableDevice”,  then stream executor platform (se::platform) further creates a StreamExecutor object containing a PluggableDeviceExecutor, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 
 See below the example code which creates the PluggableDeviceExecutor using the information registered during plugin library initialization. 

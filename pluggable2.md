@@ -49,11 +49,11 @@ This RFC describes the mechanism of extending the tensorflow device class hierar
 <img src="https://github.com/jzhoulon/RFC-review/blob/master/design_overview.png" />
 </div>
 
-* PluggableDevice is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream, and memory.
+* `PluggableDevice` is a virtual device defined in Tensorflow proper which inherits LocalDevice.It is built on top of  StreamExecutor C++ interface to manage PluggableDevice’s device, stream, and memory.
 
-* PluggableDeviceExecutor implements StreamExecutor and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
+* `PluggableDeviceExecutor` implements StreamExecutor and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
-* PluggableDevice Backend is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
+* `PluggableDevice Backend` is part of modular TF plugin, which represents the physical device runtime. It implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared object is loaded. 
 
 The pluggable device mechanism contains device discovery and creation process which creates a PluggableDevice object and PluggableDeviceExecutor object for each PluggableDevice Backend. 
 
@@ -64,9 +64,9 @@ With the RFC, existing tensorflow GPU programs can run on a plugged device witho
 
 ### Device Discovery
 
-Upon initialization of Tensorflow, it uses platform independent LoadLibrary() to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 
+Upon initialization of Tensorflow, it uses platform independent `LoadLibrary()` to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process loading plugins. 
 
-During the plugin library initialization, it calls the SE_ReigsterPlatform() API to register the stream executor platform (SE_Platform struct) to Tensorflow proper. The SE_ReigsterPlatform() API is a callback API, part of StreamExecutor C API, which passes necessary information to Tensorflow proper to instantiate a stream executor platform (se::platform class) and register to a global object MultiPlatformManager. 
+During the plugin library initialization, it calls the `SE_ReigsterPlatform()` API to register the stream executor platform (`SE_Platform` struct) to Tensorflow proper. The `SE_ReigsterPlatform()` API is a callback API, part of StreamExecutor C API, which passes necessary information to Tensorflow proper to instantiate a stream executor platform (`se::platform` class) and register to a global object `se::MultiPlatformManager`. 
 The stream executor platform must be registered with the name "PluggableDevice".  
 See below code which is an example of registering a PluggableDevice platform with StreamExecutor C API:
 ```cpp
@@ -99,18 +99,18 @@ static bool IsMyCustomPlatformRegistered = []() {
 
 ### Device Creation
 
-PluggableDeviceFactory is introduced to create the PluggableDevice, following the LocalDevice design pattern. To support existing GPU programs run on a new device without user changing the code , PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU. 
+`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the `LocalDevice` design pattern. To support existing GPU programs run on a new device without user changing the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
 ```cpp
    REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
    REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU
 ```
-When a session is created, PluggableDeviceFactory creates a PluggableDevice object for the plugin device. During the initialization of the PluggableDevice, a global object MultiPlatformManager will find its se::platform through its platform name: "PluggableDevice”,  then stream executor platform (se::platform) further creates a StreamExecutor object containing a PluggableDeviceExecutor, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
+When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name: "PluggableDevice”,  then stream executor platform (`se::platform`) further creates a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 
-See below the example code which creates the PluggableDeviceExecutor using the information registered during plugin library initialization. 
+See below the example code which creates the `PluggableDeviceExecutor` using the information registered during plugin library initialization. 
 
 The section below shows some pseudo code to introduce some changes to the Tensorflow proper and what needs to be implemented in the plugin for the pluggable device creation. The implementation is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
-1. PluggableDeviceFactory creates and initializes a set of pluggable devices when the session is created.  
+1. `PluggableDeviceFactory` creates and initializes a set of pluggable devices when the session is created.  
 ```cpp
    PluggableDeviceFactory::CreateDevices(SessionOptions& options, const string& name_prefix, std::vector<std::unique_ptr<Device>>* devices) {
      for (int i = 0; i < options.device_count(); i++) {
@@ -121,7 +121,7 @@ The section below shows some pseudo code to introduce some changes to the Tensor
    }
 ```
 
-2. PluggableDevice object binds a StreamExecutor and creates a set of Streams during the initialization.Streams include one compute stream and several memory copy streams.
+2. `PluggableDevice` object binds a StreamExecutor and creates a set of Streams during the initialization.Streams include one compute stream and several memory copy streams.
 ```cpp
    void PluggableDevice::Init(SessionOption& options) {  
      se::Platform* platform= se::MultiPlatformManager::PlatformWithName("PluggableDevice");
@@ -133,7 +133,7 @@ The section below shows some pseudo code to introduce some changes to the Tensor
      ...
    }  // create StreamExecutor
 ```
-3. PluggableDevicePlatform is responsible for the StreamExecutor creation. It creates an SE_StreamExecutor and SE_Device object through create_stream_executor and create_device function handle which are registered in the SE_Platform. Then PluggableDeviceExecutor is then constructed with SE_StreamExecutor and SE_Device object.   
+3. `PluggableDevicePlatform` is responsible for the StreamExecutor creation. It creates an `SE_StreamExecutor` and `SE_Device` object through create_stream_executor and create_device function handle which are registered in the `SE_Platform`. Then `PluggableDeviceExecutor` is then constructed with `SE_StreamExecutor` and `SE_Device` object.   
 ```cpp
    StreamExecutor* PluggableDevicePlaform::ExeutorForDevice(int device_id） {
     auto config = get_plugin_config(device_id);
@@ -146,10 +146,10 @@ The section below shows some pseudo code to introduce some changes to the Tensor
 ```
 **Tensorflow Proper**
 
-Tensorflow proper needs to be extended to support a new virtual device (PluggableDevice) to represent a set of new third-party devices and a new stream executor platform (PluggableDevicePlatform) to create the device and related resources with the information registered from plugin. 
+Tensorflow proper needs to be extended to support a new virtual device (`PluggableDevice`) to represent a set of new third-party devices and a new stream executor platform (`PluggableDevicePlatform`) to create the device and related resources with the information registered from plugin. 
 
 Two sets of classes need to be defined in Tensorflow proper. 
-* Set 1: PluggableDevice related classes 
+* Set 1: `PluggableDevice` related classes 
    * class `PluggableDevice`: a virtual device represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
    * class `PluggableDeviceFactory`: a device factory to create the PluggableDevice
    * class `PluggableDeviceBFCAllocator`: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
@@ -157,7 +157,7 @@ Two sets of classes need to be defined in Tensorflow proper.
    * class `PluggableDeviceHostAllocator`: allocator for pinned CPU RAM that is made known to PluggableDevice for the purpose of efficient DMA with PluggableDevice.
    * class `PluggableDeviceEventMgr`: an object to keep track of pending Events in the StreamExecutor streams.
    * class `PluggableDeviceContext`: a wrapper of pluggable device specific context that can be passed to OpKernels.
-* Set 2: PluggableDevicePlatform related classes 
+* Set 2: `PluggableDevicePlatform` related classes 
    * class `PluggableDevicePlatform`: PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SE_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
    * class `PluggableDeviceExecutor`: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SE_StreamExecutor* executor_ and SE_Device* device_ whose member can be accessed in both Tensorflow proper and device plugins.
    * class `PluggableDeviceStream`: wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SE_Stream which is treated as an opaque type to Tensorflow,  whose structure is created by the device plugin.  

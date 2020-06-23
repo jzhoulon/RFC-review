@@ -118,11 +118,11 @@ The section below shows some pseudo code to introduce some changes to the Tensor
 ```cpp
    void PluggableDevice::Init(SessionOption& options) {  
      se::Platform* platform= se::MultiPlatformManager::PlatformWithName("PluggableDevice");
-     stream_executor_ = platform->**ExecutorForDevice**(pluggable_dev_id_);
+     stream_executor_ = platform->ExecutorForDevice(pluggable_dev_id_);
      compute_stream_ = new se::Stream(stream_executor_);
      compute_stream_->Init();
      host_to_device_stream_ = new se::Stream(stream_executor_);
-     host_to_device_stream_->**Init**();
+     host_to_device_stream_->Init();
      ...
    }  // create StreamExecutor
 ```

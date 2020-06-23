@@ -144,7 +144,7 @@ The section below shows some pseudo code to introduce some changes to the Tensor
     return std::move(executor);
    }
 ```
-####Tensorflow Proper
+**Tensorflow Proper**
 
 Tensorflow proper needs to be extended to support a new virtual device (PluggableDevice) to represent a set of new third-party devices and a new stream executor platform (PluggableDevicePlatform) to create the device and related resources with the information registered from plugin. 
 
@@ -164,10 +164,10 @@ Two sets of classes need to be defined in Tensorflow proper.
    * class `PluggableDeviceTimer`: wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    * class `PluggableDeviceEvent`: wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
-####Plugin
+**Plugin**
 
 Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
-*  SE_StreamExecutor is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
+*  `SE_StreamExecutor` is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
 ```cpp
    SE_StreamExecutor* create_stream_executor() {
      SE_StreamExecutor* se_nfs = new SE_StreamExecutor();
@@ -176,7 +176,7 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
      …
    }//Init device
 ```
-* SE_Device is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
+* `SE_Device` is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
 ```cpp
   SE_Device* create_device(SE_Options* options, TF_Status* status) {
     SE_Device* se = new SE_Device();
@@ -185,7 +185,7 @@ Plugins need to implement and register the StreamExecutor C API defined in the T
     return se;
   }
 ```
-* SE_Stream is defined in plugin and treated as an opaque struct in Tensorflow proper. 
+* `SE_Stream` is defined in plugin and treated as an opaque struct in Tensorflow proper. 
 ```cpp
   void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
     *stream = new SE_Stream_st();

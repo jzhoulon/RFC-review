@@ -26,35 +26,35 @@
 
 ## **Objective**
 
-Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing most of the code.  Users only need to install a shared library in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the library. 
+Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing most of the code.  Users only need to install a plugin in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the plugin. 
 
 This RFC is based on the Modular TensorFlow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the TensorFlow design to plugin capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
 ## **Motivation**
 
-When extending TensorFlow to support a new device, one needs to modify tensorflow code and maintain a special tensorflow build for the new device. Modular TensorFlow RFC provides a mechanism which adds the device support, build in a separate shared library, at runtime.  This RFC further describes how tensorflow automatically discovers these device libraries and adds them to tensorflow.  
+When extending TensorFlow to support a new device, one needs to modify tensorflow code and maintain a special tensorflow build for the new device. Modular TensorFlow RFC design a plugin architecture for serverl TensorFlow components(Networking,Filesystems,Kernel,Graph anAccelerator backends modules). This RFC further details the accelerator backends's C++ modularity, and how TensorFlow transparently run models on a new device.
 
 The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the interface described in this RFC, it can be plugged to tensorflow proper and enable tensorflow to run existing tensorflow programs on a new device. 
 
 ## **User Benefit**
 
-This allows tensorflow to transparently run tensorflow programs on new devices, as long as users set up the system properly to include device plugin libraries. 
+This allows tensorflow to transparently run tensorflow programs on new devices, as long as users set up the system properly installing device plugin. 
 
 ## **Design Proposal**
 
 ### Design Overview
 
-This RFC describes the mechanism of extending the tensorflow device class hierarchy to add pluggable device as shown in diagram 1:
+This RFC extends the TensorFlow device class hierarchy to add a pluggable device named PluggableDevice which is built on top of StreamExecutor, and all new third-party devices who want to integrate with current TensorFlow stack only need to implment StreamExecutor C API.(Shown in Diagram 1).
 
 <div align=center> 
 <img src=20200624-pluggable-device-for-tensorflow/design_overview.png>
 </div>
 
-* `PluggableDevice` is a virtual device defined in TensorFlow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s key abstractions like stream, memory and event.
+* `PluggableDevice` is a class defined in TensorFlow proper which inherits [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s key abstractions like StreamExecutor, stream, memory and event.
 
 * `PluggableDeviceExecutor` implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
-* `PluggableDevice Backend` is inside the TF plugin, which provides the implementation of StreamExecutor C API and registers its platform to the TensorFlow proper when the plugin’s shared library is loaded. 
+* `PluggableDevice Implementation` is inside the TensorFlow plugin, which provides those C functions defined in the StreamExecutor C API.
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 
@@ -100,11 +100,17 @@ static bool IsPluggableDevicePlatformRegistered = []() {
 
 ### Device Creation
 
-`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs run on a new device without user changing the most of the code , `PluggableDeviceFactory` is registered as "GPU" device name and given higher priority than the default GPU. 
+`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern.The pluggable device mechanism can support two user scenarios:
+    * Leverage existing GPU name: PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU device.
 ```cpp
-   REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
-   REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU
+        REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
+        REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU
 ```
+    * Add new device name: PluggableDevice doesn't stick to using "GPU" device name only, it's optional to add a new device name.
+```cpp
+        REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 220); // plugged GPU
+```
+    
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name: "PluggableDevice”,  then stream executor platform (`se::platform`) further creates a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 
 See below the example code which creates the `PluggableDeviceExecutor` using the information registered during plugin library initialization. 

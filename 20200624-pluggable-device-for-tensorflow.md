@@ -111,7 +111,7 @@ When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` 
 
 The section below shows some pseudo code to introduce some extension inside the TensorFlow proper for the pluggable device creation. The implementation is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
-1. `PluggableDeviceFactory` creates and initializes a set of pluggable devices when the session is created.  
+1. `PluggableDeviceFactory` creates and initializes a set of `PluggableDevice` instances when the session is created.  
 ```cpp
    PluggableDeviceFactory::CreateDevices(SessionOptions& options, const string& name_prefix, std::vector<std::unique_ptr<Device>>* devices) {
      for (int i = 0; i < options.device_count(); i++) {
@@ -134,7 +134,7 @@ The section below shows some pseudo code to introduce some extension inside the 
      ...
    }  // create StreamExecutor
 ```
-3. `PluggableDevicePlatform` is responsible for the StreamExecutor creation. It creates an `SE_StreamExecutor` and `SE_Device` object through create_stream_executor and create_device function handle which are registered in the `SE_Platform`. Then `PluggableDeviceExecutor` is then constructed with `SE_StreamExecutor` and `SE_Device` object.   
+3. `PluggableDevicePlatform` is responsible for the StreamExecutor creation. It creates an `SE_StreamExecutor` and `SE_Device` object through create_stream_executor and create_device which are registered in the `SE_Platform`. Then `PluggableDeviceExecutor` is constructed with `SE_StreamExecutor` and `SE_Device` object.   
 ```cpp
    StreamExecutor* PluggableDevicePlaform::ExeutorForDevice(int device_id） {
     auto config = get_plugin_config(device_id);

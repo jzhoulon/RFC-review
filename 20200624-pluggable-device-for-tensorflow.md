@@ -106,6 +106,7 @@ static bool IsPluggableDevicePlatformRegistered = []() {
         REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU
         REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU
 ```
+ 
     * Add new device name: PluggableDevice doesn't stick to using "GPU" device name only, it's optional to add a new device name.
 ```cpp
         REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 220); // plugged GPU

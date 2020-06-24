@@ -65,7 +65,7 @@ With the RFC, existing TensorFlow GPU programs can run on a plugged device witho
 
 ### Device Discovery
 
-Upon initialization of TensorFlow, it uses platform independent `LoadLibrary()` to load the dynamic library. The PluggableDevice Backend plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process of loading plugins. 
+Upon initialization of TensorFlow, it uses platform independent `LoadLibrary()` to load the dynamic library. The plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process of loading plugins. 
 
 During the plugin library initialization, it calls the `SE_ReigsterPlatform()` API to register the stream executor platform (`SE_Platform` struct) to TensorFlow proper. The `SE_ReigsterPlatform()` API is a callback API, part of StreamExecutor C API, which passes necessary information to TensorFlow proper to instantiate a stream executor platform ([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and register to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82). 
 The stream executor platform must be registered with the name "PluggableDevice".  

@@ -54,7 +54,7 @@ This RFC describes the mechanism of extending the tensorflow device class hierar
 
 * `PluggableDeviceExecutor` implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
 
-* `PluggableDevice Backend` is inside the TF plugin, which implements StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared library is loaded. 
+* `PluggableDevice Backend` is inside the TF plugin, which provides the implementation of StreamExecutor C API and registers its platform to the Tensorflow proper when the plugin’s shared library is loaded. 
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 

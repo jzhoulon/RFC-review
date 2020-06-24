@@ -44,7 +44,7 @@ This RFC allows TensorFlow to transparently run TensorFlow programs on new devic
 
 ### Design Overview
 
-This RFC extends the TensorFlow device class hierarchy to add a standardized pluggable device named PluggableDevice which is built on top of StreamExecutor, and all new third-party devices who want to integrate with current TensorFlow stack only need to implment StreamExecutor C API.(Shown in Diagram 1).
+This RFC extends the TensorFlow device class hierarchy to add a standardized pluggable device named `PluggableDevice` which is built on top of [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73), and all new third-party devices who want to integrate with current TensorFlow stack only need to implment StreamExecutor C API(Shown in Diagram 1).
 
 <div align=center> 
 <img src=20200624-pluggable-device-for-tensorflow/design_overview.png>

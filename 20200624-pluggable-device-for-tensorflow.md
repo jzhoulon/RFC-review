@@ -167,7 +167,7 @@ Two sets of classes need to be defined in TensorFlow proper.
    * class `PluggableDeviceTimer`: wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    * class `PluggableDeviceEvent`: wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
-**Plugin**
+**Tensorflow Plugin**
 
 Plugin authors need to provide those C functions defined in StreamExecutor C API . 
 *  `SE_StreamExecutor` is defined as struct in the C API, both sides(TensorFlow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  

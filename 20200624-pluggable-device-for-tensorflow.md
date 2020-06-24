@@ -106,6 +106,7 @@ static bool IsPluggableDevicePlatformRegistered = []() {
         `REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU`  
 * Add new device name: PluggableDevice doesn't stick to using "GPU" device name only, it's optional to add a new device name.  
         `REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 220); // plugged GPU`
+
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name: "PluggableDevice”,  then stream executor platform (`se::platform`) further creates a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 
 See below the example code which creates the `PluggableDeviceExecutor` using the information registered during plugin library initialization. 

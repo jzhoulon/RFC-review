@@ -26,19 +26,19 @@
 
 ## **Objective**
 
-Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing most of the code.  Users only need to install a plugin in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the plugin. 
+Implement a pluggable device mechanism which allows to run existing TensorFlow programs on a new device without user changing most of the code.  Users only need to install a plugin in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the plugin. 
 
 This RFC is based on the Modular TensorFlow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the TensorFlow design to plugin capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
 ## **Motivation**
 
-When extending TensorFlow to support a new device, one needs to modify tensorflow code and maintain a special tensorflow build for the new device. Modular TensorFlow RFC design a plugin architecture for serverl TensorFlow components(Networking,Filesystems,Kernel,Graph anAccelerator backends modules). This RFC further standardizes the accelerator backends's C++ modularity, and shows how TensorFlow transparently run models on a new device.
+When extending TensorFlow to support a new device, one needs to modify TensorFlow code and maintain a special TensorFlow build for the new device. Modular TensorFlow RFC design a plugin architecture for serverl TensorFlow components(Networking,Filesystems,Kernel,Graph anAccelerator backends modules). This RFC further standardizes the accelerator backends's C++ modularity, and shows how TensorFlow transparently run models on a new device.
 
-The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the interface described in this RFC, it can be plugged to tensorflow proper and enable tensorflow to run existing tensorflow programs on a new device. 
+The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the interface described in this RFC, it can be plugged to TensorFlow proper and enable TensorFlow to run existing TensorFlow programs on a new device. 
 
 ## **User Benefit**
 
-This allows tensorflow to transparently run tensorflow programs on new devices, as long as users set up the system properly installing device plugin. 
+This allows TensorFlow to transparently run TensorFlow programs on new devices, as long as users set up the system properly installing device plugin. 
 
 ## **Design Proposal**
 
@@ -58,7 +58,7 @@ This RFC extends the TensorFlow device class hierarchy to add a standardized plu
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 
-With the RFC, existing tensorflow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
+With the RFC, existing TensorFlow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/gpu_example.png>
 </div>

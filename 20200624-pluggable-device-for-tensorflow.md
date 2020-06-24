@@ -58,7 +58,7 @@ This RFC extends the TensorFlow device class hierarchy to add a standardized plu
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each PluggableDevice Backend. 
 
-With the RFC, existing TensorFlow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
+With the RFC, existing TensorFlow GPU programs can run on a plugged device without the user changing the code. The Diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/gpu_example.png>
 </div>

@@ -84,10 +84,10 @@ static bool IsPluggableDevicePlatformRegistered = []() {
 ### Device Creation
 
 `PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs run on a new device without user changing the code, PluggableDeviceFactory is registered as "GPU" name and given higher priority than the default GPU device.  
-&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU`  
-&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU`  
+&emsp;&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU`  
+&emsp;&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU`  
 For those vendor who don't want to use "GPU" name, it's optional to register a new device name. For example:   
-&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 230); // plugged third party device`
+&emsp;&emsp;`REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 230); // plugged third party device`
 
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name: "PluggableDevice”,  then stream executor platform (`se::platform`) further creates a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 

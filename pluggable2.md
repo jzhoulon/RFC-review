@@ -255,7 +255,7 @@ Kernel and op registration and implementation API [RFC](https://github.com/tenso
 
 ### **Platforms and Environments**
 
-* The pluggable device mechanism is based on loadlibrary() so should work on all the platforms supported by loadlibrary. The other enhancement to tensorflow proper is platform independent.
+* The pluggable device mechanism is based on `LoadLibrary()` so should work on all the platforms supported by `LoadLibrary`. The other enhancement to tensorflow proper is platform independent.
 
 ### **Best Practices**
 

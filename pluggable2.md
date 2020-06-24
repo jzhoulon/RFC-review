@@ -167,7 +167,7 @@ Two sets of classes need to be defined in Tensorflow proper.
 
 **Plugin**
 
-Plugins need to implement and register the StreamExecutor C API defined in the Tensorflow proper. 
+Plugin authors need to provide those C functions defined in StreamExecutor C API . 
 *  `SE_StreamExecutor` is defined as struct in the C API, both sides(Tensorflow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
 ```cpp
    SE_StreamExecutor* create_stream_executor() {

@@ -19,7 +19,7 @@
   </tr>
   <tr>
     <td>Updated</td>
-    <td>2020-06-19</td>
+    <td>2020-06-24</td>
   </tr>
 </table>
 

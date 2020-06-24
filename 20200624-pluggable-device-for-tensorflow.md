@@ -101,9 +101,11 @@ static bool IsPluggableDevicePlatformRegistered = []() {
 ### Device Creation
 
 `PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern.The pluggable device mechanism can support two user scenarios:
+
     * Leverage existing GPU name: PluggableDeviceFactory is registered as "GPU" device name and given higher priority than the default GPU device.
         `REGISTER_LOCAL_DEVICE_FACTORY("GPU",PluggableDeviceFactory, 220); // plugged GPU`
         `REGISTER_LOCAL_DEVICE_FACTORY("GPU", GPUDeviceFactory, 210);//default GPU`
+  
     * Add new device name: PluggableDevice doesn't stick to using "GPU" device name only, it's optional to add a new device name.
         `REGISTER_LOCAL_DEVICE_FACTORY("Third-party device",PluggableDeviceFactory, 220); // plugged GPU`
     

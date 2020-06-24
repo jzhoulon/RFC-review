@@ -22,7 +22,13 @@
     <td>2020-06-24</td>
   </tr>
 </table>
-
+| Status        | Proposed                                             |
+:-------------- |:---------------------------------------------------- |
+| **RFC #**     | [NNN](https://github.com/tensorflow/community/pull/NNN) (update when you have community PR #)|
+| **Author(s)** | Zhoulong Jiang (zhoulong.jiang@intel.com), Yiqiang Li (yiqiang.li@intel.com),  Eric Lin (eric.lin@intel.com), Jianhui Li (jian.hui.li@intel.com) |
+| **Sponsor**   | Anna Revinskaya (annarev@google.com)                 |
+| **Updated**   | 2020-06-24                                           |
+| **Obsoletes** | TF-RFC it replaces, else remove this header          |
 
 ## **Objective**
 

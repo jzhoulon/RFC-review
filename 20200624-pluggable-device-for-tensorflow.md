@@ -147,7 +147,7 @@ The section below shows some pseudo code to introduce some extension inside the 
 ```
 **TensorFlow Proper**
 
-TensorFlow proper needs to be extended to support a new virtual device (`PluggableDevice`) to represent a set of new third-party devices and a new stream executor platform (`PluggableDevicePlatform`) to create the device and related resources with the information registered from plugin. 
+TensorFlow proper needs to be extended to support a new class `PluggableDevice` to represent a set of new third-party devices and a new stream executor platform (`PluggableDevicePlatform`) to create the device and related resources with the information registered from plugin. 
 
 Two sets of classes need to be defined in TensorFlow proper. 
 * Set 1: `PluggableDevice` related classes 

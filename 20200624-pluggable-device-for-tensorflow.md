@@ -38,7 +38,7 @@ The pluggable device discovery and initialization is transparent to end users. A
 
 ## **User Benefit**
 
-This allows TensorFlow to transparently run TensorFlow programs on new devices, as long as users set up the system properly installing the device plugin. 
+This RFC allows TensorFlow to transparently run TensorFlow programs on new devices, as long as users set up the system properly installing the device plugin. 
 
 ## **Design Proposal**
 

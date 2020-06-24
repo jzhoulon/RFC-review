@@ -26,13 +26,13 @@
 
 ## **Objective**
 
-Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing the code.  Users only need to install a shared library in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the library. 
+Implement a pluggable device mechanism which allows to run existing tensorflow programs on a new device without user changing most of the code.  Users only need to install a shared library in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the library. 
 
 This RFC is based on the Modular Tensorflow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the Tensorflow design to plugin capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
 ## **Motivation**
 
-When extending Tensorflow to support a new device, one needs to modify tensorflow code and maintain a special tensorflow build for the new device. Modular Tensorflow RFC provides a mechanism which adds the device support, built in a separate library, at runtime.  This RFC further describes how tensorflow automatically discovers these device libraries and adds them to tensorflow.  
+When extending Tensorflow to support a new device, one needs to modify tensorflow code and maintain a special tensorflow build for the new device. Modular Tensorflow RFC provides a mechanism which adds the device support, build in a separate shared library, at runtime.  This RFC further describes how tensorflow automatically discovers these device libraries and adds them to tensorflow.  
 
 The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the interface described in this RFC, it can be plugged to tensorflow proper and enable tensorflow to run existing tensorflow programs on a new device. 
 

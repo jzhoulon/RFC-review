@@ -109,9 +109,7 @@ static bool IsPluggableDevicePlatformRegistered = []() {
 
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name: "PluggableDevice”,  then stream executor platform (`se::platform`) further creates a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 
 
-See below the example code which creates the `PluggableDeviceExecutor` using the information registered during plugin library initialization. 
-
-The section below shows some pseudo code to introduce some changes to the TensorFlow proper and what needs to be implemented in the plugin for the pluggable device creation. The implementation is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
+The section below shows some pseudo code to introduce some extension inside the TensorFlow proper for the pluggable device creation. The implementation is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
 1. `PluggableDeviceFactory` creates and initializes a set of pluggable devices when the session is created.  
 ```cpp

@@ -34,7 +34,7 @@ This RFC is based on the Modular TensorFlow  [RFC](https://github.com/tensorflow
 
 When extending TensorFlow to support a new device, one needs to modify TensorFlow code and maintain a special TensorFlow build for the new device. Modular TensorFlow RFC design a plugin architecture for serveral TensorFlow components(`Networking`, `Filesystems`, `Kernel`, `Graph` and `Accelerator backends` modules). This RFC further standardizes the `Accelerator backends` module's C++ modularity, and shows how TensorFlow transparently run models on a new device.
 
-The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the interface described in this RFC, it can be plugged to TensorFlow proper and enable TensorFlow to run existing TensorFlow programs on a new device. 
+The pluggable device discovery and initialization is transparent to end users. As long as the device plugin libraries follow the design described in this RFC, it can be plugged to TensorFlow proper and enable TensorFlow to run existing TensorFlow programs on a new device. 
 
 ## **User Benefit**
 

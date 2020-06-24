@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td>Status</td>
-    <td>(Proposed)</td>
+    <td>Proposed</td>
   </tr>
   <tr>
     <td>RFC #</td>

@@ -60,7 +60,7 @@ The pluggable device mechanism contains device discovery and creation process wh
 
 With the RFC, existing tensorflow GPU programs can run on a plugged device without the user changing the code. The diagram 2 describes the workflow of Tensorflow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 <div align="center">
-<img src="https://github.com/jzhoulon/RFC-review/blob/master/gpu_example.png">
+<img src=gpu_example.png>
 </div>
 
 ### Device Discovery

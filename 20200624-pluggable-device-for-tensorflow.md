@@ -11,7 +11,7 @@
   </tr>
   <tr>
     <td>Author(s)</td>
-    <td>Zhoulong Jiang, Yiqiang Li, Eric Lin, Jianhui Li</td>
+    <td>Zhoulong Jiang (zhoulong.jiang@intel.com), Yiqiang Li (yiqiang.li@intel.com), Eric Lin (eric.lin@intel.com), Jianhui Li (jian.hui.li@intel.com)</td>
   </tr>
   <tr>
     <td>Sponsor</td>

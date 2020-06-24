@@ -1,27 +1,5 @@
 # **Pluggable device for TensorFlow**
 
-<table>
-  <tr>
-    <td>Status</td>
-    <td>Proposed</td>
-  </tr>
-  <tr>
-    <td>RFC #</td>
-    <td>NNN (update when you have community PR #)</td>
-  </tr>
-  <tr>
-    <td>Author(s)</td>
-    <td>Zhoulong Jiang (zhoulong.jiang@intel.com), Yiqiang Li (yiqiang.li@intel.com), Eric Lin (eric.lin@intel.com), Jianhui Li (jian.hui.li@intel.com)</td>
-  </tr>
-  <tr>
-    <td>Sponsor</td>
-    <td>Anna Revinskaya (annarev@google.com)</td>
-  </tr>
-  <tr>
-    <td>Updated</td>
-    <td>2020-06-24</td>
-  </tr>
-</table>
 | Status        | Proposed                                             |
 :-------------- |:---------------------------------------------------- |
 | **RFC #**     | [NNN](https://github.com/tensorflow/community/pull/NNN) (update when you have community PR #)|

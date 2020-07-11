@@ -93,7 +93,7 @@ Proper:
   DeviceFactory::Register(type_str, new PluggableDeviceFactory(platform_name_str), priority); 
 ```  
 For those vendors who don't want to use "GPU" name, it's optional to register a new device name.  
-One limitation here: when multiple devices registered, their device names should be different, or it will get conflict and the registration will fail. This can be enhanced in the future.Possible Solutoin:
+One limitation here: when multiple devices registered, their device names should be different, or it will get conflict and the registration will fail. This can be enhanced in the future.Possible Solutoin:  
 &emsp; python layer provides API to let user specify an alternative device name they prefer if there is a conflict, such as:  
 &emsp;&emsp;`tf.load_plugin("CustomDeviceName", path to plugin)`
 

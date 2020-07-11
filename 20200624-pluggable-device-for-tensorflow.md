@@ -50,8 +50,8 @@ With the RFC, existing TensorFlow GPU programs can run on a plugged device witho
 
 Upon initialization of TensorFlow, it uses platform independent `LoadLibrary()` to load the dynamic library. The plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process of loading plugins. 
 
-During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the Plugin to instantiate a StreamExecutor Platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and register to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper also gets the device type through `SE_InitializePlugin` and register the PluggableDeviceFactory. This device type will be the device strings to be used to access pluggable device with tf.device() in python layer.
-Plugin implements `SE_InitializePlugin` to provide the necessary informations:
+During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the Plugin to instantiate a StreamExecutor Platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and register to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper also gets the device type through `SE_InitializePlugin` and register the `PluggableDeviceFactory`with this type. The device type will be the device strings to be used to access pluggable device with tf.device() in python layer.
+Plugin authors needs to implement `SE_InitializePlugin` to provide the necessary informations:
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   static const int32_t plugin_id_value = 123;
@@ -76,7 +76,7 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
 ```
 ### Device Creation
 
-`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs running on a new device without user changing the code, plugin authors can register "GPU" string as the device type through `SE_InitializePlugin` and then TensorFlow proper will register the PluggableDevice as "GPU" name with higher priority than the default GPU device.    
+`PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs running on a new device without user changing the code, plugin authors can register "GPU" string as the device type through `SE_InitializePlugin` and then TensorFlow proper will register the `PluggableDevice` as "GPU" name with higher priority than the default GPU device.    
 Plugin:
 ```
   SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
@@ -91,8 +91,8 @@ Proper:
   std::string platform_name_str(params.params.name, params.params.name_len);
   std::string type_str(params.params.type, params.params.type_len);
   DeviceFactory::Register(type_str, new PluggableDeviceFactory(platform_name_str), priority); 
-```
-For those vendors who don't want to use "GPU" name, it's optional to register a new device name.
+```  
+For those vendors who don't want to use "GPU" name, it's optional to register a new device name.  
 One limitation: when multiple devices registered, their device names should be different, or it will fail. This can be enhanced in the future.
 
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name registered from plugin: "MyDevicePlatform”,  then stream executor platform (`se::platform`) further creates or find a StreamExecutor object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the StreamExecutor objects. 

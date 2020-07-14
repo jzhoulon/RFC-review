@@ -191,12 +191,12 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
-To avoid kernel registration conflict with existing CUDA kernels, the backend device_type for kernel registration needs to be seperated from the front-end visible device type ("GPU"). Two Options:  
+To avoid kernel registration conflict with existing GPU(CUDA) kernels, the backend device_type for kernel registration needs to be seperated from the front-end visible device type ("GPU"). Two Options:  
 &emsp;option 1) This backend device_type can be an alternative string provided by plugin, and plugin authors use the string for kernel registration.   
 &emsp;option 2) Another option is that plugin authors only need to provide one device type, and Tensorflow proper takes it as the string name for Device registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
 
 **Option 1:**  
-Plugin:
+Plugin side:
 plugin author provides an alternative string(such as "CUDA") to TensorFlow proper, which seperates from the front-end device type("GPU") and uses this string for kernel registration.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
@@ -218,7 +218,7 @@ void InitPlugin() {
 }
 ```
 **Option 2:**  
-Plugin:  
+Plugin side:  
 plugin author provides the device type("GPU") for Device Registration, and also uses it for kernel registration in plugin side.
 ```
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
@@ -237,7 +237,7 @@ void InitPlugin() {
   TF_DeleteStatus(status);
 }
 ```
-TensorFlow Proper:  
+TensorFlow Proper side:  
 TensorFlow Proper uses this device type for Device Registration and makes "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration.
 ```
 TF_KernelBuilder* TF_NewKernelBuilder(

@@ -5,7 +5,7 @@
 | **RFC #**     | [262](https://github.com/tensorflow/community/pull/262)|
 | **Author(s)** | Zhoulong Jiang (zhoulong.jiang@intel.com), Yiqiang Li (yiqiang.li@intel.com),  Eric Lin (eric.lin@intel.com), Jianhui Li (jian.hui.li@intel.com) |
 | **Sponsor**   | Anna Revinskaya (annarev@google.com)                 |
-| **Updated**   | 2020-06-24                                           |
+| **Updated**   | 2020-07-14                                           |
 
 ## **Objective**
 
@@ -95,7 +95,9 @@ Proper:
 For those vendors who don't want to use "GPU" name, it's optional to register a new device name.  
 Limitation: when multiple devices registered, their device names should be different, or it will get conflict and the registration will fail. This can be enhanced in the future. A possible solutoin: python layer provides API to let user specify an alternative device name they prefer if there is a conflict, such as:  
 ```
-tf.load_plugin("CustomDeviceName", path_to_plugin_lib)
+  tf.load_plugin("CustomDeviceName", path_to_plugin_lib)
+  with tf.device("/CustomDeviceName:0"):
+    ...
 ```
 When a session is created, `PluggableDeviceFactory` creates a `PluggableDevice` object for the plugin device. During the initialization of the `PluggableDevice`, a global object `se::MultiPlatformManager` will find its `se::platform` through its platform name registered from plugin: "MyDevicePlatform”,  then stream executor platform (`se::platform`) further creates or find a `StreamExecutor` object containing a `PluggableDeviceExecutor`, and multiple stream objects(a computation stream and several memory copy streams) supporting the `StreamExecutor` objects. 
 
@@ -106,7 +108,7 @@ The section below shows some pseudo code to introduce some extension inside the 
    PluggableDeviceFactory::CreateDevices(SessionOptions& options, const string& name_prefix, std::vector<std::unique_ptr<Device>>* devices) {
      for (int i = 0; i < options.device_count(); i++) {
       PluggableDevice pluggable_device = CreatePluggableDevice(options,i); //set allocator
-      pluggable_device->Init(options);
+      pluggable_device->Init(options, pluggable_device_platform_name_);
       devices.push_back(std::move(pluggable_device));
      }
    }
@@ -114,8 +116,8 @@ The section below shows some pseudo code to introduce some extension inside the 
 
 2. `PluggableDevice` object binds a StreamExecutor and creates a set of Streams during the initialization.Streams include one compute stream and several memory copy streams.
 ```cpp
-   void PluggableDevice::Init(SessionOption& options) {  
-     se::Platform* platform= se::MultiPlatformManager::PlatformWithName("PluggableDevice");
+   void PluggableDevice::Init(SessionOption& options, const string& platform_name) {  
+     se::Platform* platform= se::MultiPlatformManager::PlatformWithName(platform_name);
      stream_executor_ = platform->ExecutorForDevice(pluggable_dev_id_);
      compute_stream_ = new se::Stream(stream_executor_);
      compute_stream_->Init();
@@ -141,7 +143,7 @@ TensorFlow proper needs to be extended to support a new class `PluggableDevice` 
 
 Two sets of classes need to be defined in TensorFlow proper. 
 * Set 1: `PluggableDevice` related classes 
-   * class `PluggableDevice`:  a class represents a set of new third-party devices, it has a new device type named "PluggableDevice"/DEVICE_PLUGGABLE.
+   * class `PluggableDevice`:  a class represents a set of new third-party devices, its device type attribute (counter part of DEVICE_GPU, DEVICE_CPU) can be a new string registered from plugin or TensorFlow proper adds a string prefix "PLUGGABLE_" to the exsiting registed device name(front-end) which is get from `SE_InitializePlugin` as the device type attribute, depends on StreamExecutor C API and kernel C API. For the second option(adding "PLUGGABLE_" prefix), Kernel C API can also add the "PLUGGABLE_" to the device_type registered so it can be transparently to the plugin authors.For example, plugin authors provide "GPU" name and register the kernels to the "GPU" name, and TensorFlow Proper takes the "GPU" as the front-end device name and makes the "PLUGGABLE_GPU" as the device type attribute (counter part of DEVICE_GPU, DEVICE_CPU). 
    * class `PluggableDeviceFactory`: a device factory to create the PluggableDevice
    * class `PluggableDeviceBFCAllocator`: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.
    * class `PluggableDeviceAllocator`: an allocator that wraps a PluggableDevice allocator.

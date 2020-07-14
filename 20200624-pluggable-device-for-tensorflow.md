@@ -191,10 +191,12 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
-The device_type for kernel registration can be an alternative string registered from plugin, needs to seperate from the front-end device type("GPU"), and kernel registeration use the string in the plugin. Another option is plugin authors only need to register one device type, Tensorflow proper takes it as the name for DeviceFactor registration and "PLUGGABLE" + device type as the name for kernel registeration and the device_type attribute in PluggableDevice.
+To avoid kernel registration conflict with existing CUDA kernels, the device_type for kernel registration needs to seperate from the front-end device type ("GPU").   
+&emsp;1) This device_type be an alternative string registered from plugin, and plugin authors use the string in the plugin for kernel registration. 
+&emsp;2)Another option is that plugin authors only need to register one device type, and Tensorflow proper takes it as the string name for DeviceFactory registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
 **Option 1:**
 Plugin:
-plugin author provides an alternative string to TensorFlow proper, which seperates from the front-end device type("GPU")
+plugin author provides an alternative string(such as "CUDA") to TensorFlow proper, which seperates from the front-end device type("GPU")
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
@@ -206,7 +208,7 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
 }
 
 void InitPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", CUDA,
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "CUDA", // seperate from front-end visible device type
       &Conv_Create, &Conv_Compute, &Conv_Delete);
   TF_Status* status = TF_NewStatus();
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
@@ -216,7 +218,7 @@ void InitPlugin() {
 ```
 **Option2:**
 Plugin:
-plugin author provides device type to TensorFlow proper, and use it for kernel registration.
+plugin author provides the device type("GPU") to TensorFlow proper, and use it for kernel registration.
 ```
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
@@ -226,7 +228,7 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
 }
 
 void InitPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", GPU,
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", // same type as front-end visible device type
       &Conv_Create, &Conv_Compute, &Conv_Delete);
   TF_Status* status = TF_NewStatus();
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
@@ -235,7 +237,7 @@ void InitPlugin() {
 }
 ```
 TensorFlow Proper:
-TensorFlow Proper uses this device type for DeviceFactory Registration and make "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration.
+TensorFlow Proper uses this device type for DeviceFactory Registration and makes "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration.
 ```
 TF_KernelBuilder* TF_NewKernelBuilder(
     const char* op_name, const char* device_name,

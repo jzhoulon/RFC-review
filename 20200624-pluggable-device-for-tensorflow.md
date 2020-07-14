@@ -193,11 +193,11 @@ This RFC shows an example of registering kernels for PluggableDevice. Kernel and
 
 To avoid kernel registration conflict with existing CUDA kernels, the backend device_type for kernel registration needs to be seperated from the front-end device type ("GPU").   
 &emsp;1) This backend device_type can be an alternative string registered from plugin, and plugin authors use the string in the plugin for kernel registration.   
-&emsp;2) Another option is that plugin authors only need to register one device type, and Tensorflow proper takes it as the string name for DeviceFactory registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
+&emsp;2) Another option is that plugin authors only need to register one device type, and Tensorflow proper takes it as the string name for Device registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
 
 **Option 1:**  
 Plugin:
-plugin author provides an alternative string(such as "CUDA") to TensorFlow proper, which seperates from the front-end device type("GPU") and use this string for kernel registration.
+plugin author provides an alternative string(such as "CUDA") to TensorFlow proper, which seperates from the front-end device type("GPU") and uses this string for kernel registration.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
@@ -217,9 +217,9 @@ void InitPlugin() {
   TF_DeleteStatus(status);
 }
 ```
-**Option2:**  
+**Option 2:**  
 Plugin:  
-plugin author provides the device type("GPU") to TensorFlow proper, and use it for kernel registration.
+plugin author provides the device type("GPU") for Device Registration, and also uses it for kernel registration.
 ```
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
@@ -238,7 +238,7 @@ void InitPlugin() {
 }
 ```
 TensorFlow Proper:  
-TensorFlow Proper uses this device type for DeviceFactory Registration and makes "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration.
+TensorFlow Proper uses this device type for Device Registration and makes "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration.
 ```
 TF_KernelBuilder* TF_NewKernelBuilder(
     const char* op_name, const char* device_name,

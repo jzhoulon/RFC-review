@@ -191,7 +191,7 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
-To avoid kernel registration conflict with existing GPU(CUDA) kernels, the backend device_type for kernel registration needs to be seperated from the front-end visible device type ("GPU"). Two Options:  
+To avoid kernel registration conflict with existing GPU(CUDA) kernels, the backend device_type for kernel registration should be seperated from the front-end visible device type ("GPU"). Two Options:  
 &emsp;option 1) The backend device_type can be an alternative string provided by plugin, and plugin authors use the string for kernel registration.   
 &emsp;option 2) Another option is that plugin authors only need to provide one device type, and Tensorflow proper takes it as the string name for Device registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
 

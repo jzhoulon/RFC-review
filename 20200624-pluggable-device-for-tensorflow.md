@@ -49,7 +49,9 @@ With the RFC, existing TensorFlow GPU programs can run on a plugged device witho
 ### Supported user scenarios of PluggableDevice 
 
 This topic describes the user scenarios that are supported in PluggableDevice design.  
-Scenario 1: Single PluggableDevice registered as "GPU" device type  
+* Supported scenario: Single PluggableDevice is registered as "GPU" device type  
+  User installs one plugin and the plugin register its device as "GPU" device type.
+
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario1.png>
 </div>

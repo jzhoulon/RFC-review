@@ -61,7 +61,8 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 <img src=20200624-pluggable-device-for-tensorflow/scenario2.png>
 </div>
 
-
+* **Supported scenario**: Multiple PluggableDevices registered as different device types
+  In the case of installing multiple plugins that registers their PluggableDevice as different device types, 
 
 
 

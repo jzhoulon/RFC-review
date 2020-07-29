@@ -50,9 +50,14 @@ With the RFC, existing TensorFlow GPU programs can run on a plugged device witho
 
 This topic describes the user scenarios that are supported/unsupported in PluggableDevice.  
 * **Supported scenario**: Single PluggableDevice registered as "GPU" device type  
-  In the case of installing one plugin that registers its PluggableDevice as "GPU" device type, the default GPUDevice will be invalid when the plugin is loaded. When user specifies the "GPU" device for ops (`with tf.device`), PluggableDevice registered will be selected to run those ops.
+  In the case of installing one plugin that registers its PluggableDevice as "GPU" device type, the default GPUDevice will be invalid when the plugin is loaded. When user specifies the "GPU" device for ops under `with tf.device("gpu:0")`, PluggableDevice registered will be selected to run those ops.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario1.png>
+</div>
+* **Supported scenario**: Single PluggableDevice registered as a new device type.
+  In the case of installing one plugin that registers its PluggableDevice as a new device type, e.g., "XPU", user can speficies the "XPU" device for ops under `with tf.device("xpu:0")`, PluggableDevice registered will be selected to run those ops.
+<div align="center">
+<img src=20200624-pluggable-device-for-tensorflow/scenario2.png>
 </div>
 
 

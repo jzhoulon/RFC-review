@@ -68,7 +68,7 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 </div>
 
 * **Non-Supported scenario**: Multiple PluggableDevices registered as the same device type.  
-  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device, these plugins's initialization will fail due to conflict. User needs to select which platform they want to use(either unloads the conflicting plugin or reconfigure the plugin with python API).
+  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device, these plugins's initialization will fail due to conflict. User needs to select which platform they want to use(either unloads the conflicting plugin or reconfigures the plugin with python API).
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario4.png>
 </div>

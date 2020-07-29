@@ -61,8 +61,12 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 <img src=20200624-pluggable-device-for-tensorflow/scenario2.png>
 </div>
 
-* **Supported scenario**: Multiple PluggableDevices registered as different device types
-  In the case of installing multiple plugins that registers their PluggableDevice as different device types, 
+* **Supported scenario**: Multiple PluggableDevices registered as different device types. 
+  In the case of installing multiple plugins that registers PluggableDevice as different device types, e.g., one is registered as "GPU" device type and another is registered as "XPU" device type, these PluggableDevices can be registered successfully and user can specify the device type to run ops on different hardware.
+<div align="center">
+<img src=20200624-pluggable-device-for-tensorflow/scenario3.png>
+</div>
+
 
 
 

@@ -56,18 +56,22 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 </div>  
 
 * **Supported scenario**: Single PluggableDevice registered as a new device type.  
-  In the case of installing one plugin that registers its PluggableDevice as a new device type, e.g., "XPU", user can speficies the "XPU" device for ops under `with tf.device("xpu:0")`, PluggableDevice registered will be selected to run those ops.
+  In the case of installing one plugin that registers its PluggableDevice as a new device type, e.g., "XPU" device, user can speficies the "XPU" device for ops under `with tf.device("xpu:0")`, PluggableDevice registered will be selected to run those ops.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario2.png>
 </div>
 
 * **Supported scenario**: Multiple PluggableDevices registered as different device types. 
-  In the case of installing multiple plugins that registers PluggableDevice as different device types, e.g., one is registered as "GPU" device type and another is registered as "XPU" device type, these PluggableDevices can be registered successfully and user can specify the device type to run ops on different hardware.
+  In the case of installing multiple plugins that registers PluggableDevice as different device types, e.g., one is registered as "GPU" device and another is registered as "XPU" device, these PluggableDevices can be registered successfully and user can specify the device type to run ops on different hardware.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario3.png>
 </div>
 
-
+* **Non-Supported scenario**: Multiple PluggableDevices registered as the same device type.
+  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device, these plugins's initialization will fail due to conflict. User needs to select which platform they want to use(either unloads the conflicting plugin or reconfigure the plugin with python API).
+<div align="center">
+<img src=20200624-pluggable-device-for-tensorflow/scenario4.png>
+</div>
 
 
 

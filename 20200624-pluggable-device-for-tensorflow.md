@@ -1,4 +1,4 @@
-# **Pluggable device for TensorFlow**
+ **Pluggable device for TensorFlow**
 
 | Status        | Proposed                                             |
 :-------------- |:---------------------------------------------------- |
@@ -218,65 +218,29 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 ### PluggableDevice kernel registration
 
-This RFC shows an example of registering kernels for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
+This RFC shows an example of kernel registration for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
-To avoid kernel registration conflict with existing GPU(CUDA) kernels, the backend device_type for kernel registration should be seperated from the front-end visible device type ("GPU"). Two Options:  
-&emsp;option 1) The backend device_type can be an alternative string provided by plugin, and plugin authors use the string for kernel registration.   
-&emsp;option 2) Another option is that plugin authors only need to provide one device type, and Tensorflow proper takes it as the string name for Device registration and makes "PLUGGABLE_" + device type as the device_type attribute in PluggableDevice for kernel registration.  
+To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch.
 
-**Option 1:**  
 Plugin side:
-plugin author provides an alternative string(such as "CUDA") to TensorFlow proper, which seperates from the front-end device type("GPU") and uses this string for kernel registration.
+Plugin author provides a device type(such as "GPU") and a subdevice type(such as "INTEL_GPU") for kernel registration and dispatch.   
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
   std::string type = "GPU" // front-end visible device type
   params.params.type = type.c_str();
-  std::string backend_device_type = "CUDA";
+  std::string sub_device_type = "INTEL_GPU";
   params.params.type = backend_device_type.c_str();
   ...
 }
 
-void InitPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "CUDA", // seperate from front-end visible device type
+void InitKernelPlugin() {
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", "INTEL_GPU", //"GPU" is device type and "INTEL_GPU" is subdevice type
       &Conv_Create, &Conv_Compute, &Conv_Delete);
   TF_Status* status = TF_NewStatus();
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
   if (TF_GetCode(status) != TF_OK) { /* handle errors */ }
   TF_DeleteStatus(status);
-}
-```
-**Option 2:**  
-Plugin side:  
-plugin author provides the device type("GPU") for Device registration, and also uses it for kernel registration in plugin side.
-```
-void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
-  ...
-  std::string type = "GPU" // front-end visible device type
-  params.params.type = type.c_str();
-  ...
-}
-
-void InitPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", // same type as front-end visible device type
-      &Conv_Create, &Conv_Compute, &Conv_Delete);
-  TF_Status* status = TF_NewStatus();
-  TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
-  if (TF_GetCode(status) != TF_OK) { /* handle errors */ }
-  TF_DeleteStatus(status);
-}
-```
-TensorFlow Proper side:  
-TensorFlow Proper uses this device type for Device registration and makes "PLUGGABLE_" + device_type("GPU") as the device_type attribute for kernel registration, this device_type attribute is transparently to the plugin authors.
-```
-TF_KernelBuilder* TF_NewKernelBuilder(
-    const char* op_name, const char* device_name,
-    void* (*create_func)(TF_OpKernelConstruction*),
-    void (*compute_func)(void*, TF_OpKernelContext*),
-    void (*delete_func)(void*)) {
-  ...
-  result->cc_builder->Device(strcat("PLUGGABLE_", device_name)); // "PLUGGABLE_GPU"
-  ...
 }
 ```
 

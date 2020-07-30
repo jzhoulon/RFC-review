@@ -223,7 +223,7 @@ This RFC shows an example of kernel registration for PluggableDevice. Kernel and
 To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch.
 
 Plugin side:
-Plugin author provides a device type(such as "GPU") and a subdevice type(such as "INTEL_GPU") for kernel registration and dispatch.   
+Plugin author provides a device type(such as "GPU") and a subdevice type(such as "INTEL_GPU") for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the device.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
@@ -235,8 +235,8 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
 }
 
 void InitKernelPlugin() {
-  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", "INTEL_GPU", //"GPU" is device type and "INTEL_GPU" is subdevice type
-      &Conv_Create, &Conv_Compute, &Conv_Delete);
+  TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", "INTEL_GPU", //"GPU" is device type
+      "INTEL_GPU", &Conv_Create, &Conv_Compute, &Conv_Delete); // "INTEL_GPU" is sub device type
   TF_Status* status = TF_NewStatus();
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
   if (TF_GetCode(status) != TF_OK) { /* handle errors */ }

@@ -79,7 +79,7 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 
 Upon initialization of TensorFlow, it uses platform independent `LoadLibrary()` to load the dynamic library. The plugin library should be installed to default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process of loading plugins. 
 
-During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the Plugin to instantiate a StreamExecutor Platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and register to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper also gets the device type through `SE_InitializePlugin` and register the `PluggableDeviceFactory`with this type. The device type will be the device strings to be used to access pluggable device with tf.device() in python layer.
+During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the Plugin to instantiate a StreamExecutor Platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and registers to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper gets a device type and a subdevice type through `SE_InitializePlugin` and registers the `PluggableDeviceFactory`with the device type. The device type will be the device string to be used to access pluggable device with tf.device() in python layer. The subdevice type is for low-level specialization of GPU device. If the user cares whether he is running on Intel/NVIDIA GPU, he can call python API (such as `tf.config.list_physical_devices`) to get the subdevice type.
 Plugin authors needs to implement `SE_InitializePlugin` and provide the necessary informations:
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
@@ -90,6 +90,7 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
   
   std::string name = "MyDevicePlatform";
   std::string type = "GPU";
+  std::string sub_type = "MY_GPU"
 
   params.params.id = id;
   params.params.visible_device_count = visible_device_count;
@@ -101,8 +102,22 @@ void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* statu
   params.params.name_len = name.size();
   params.params.type = type.c_str();
   params.params.type_len = type.size();
+  params.params.sub_type = sub_type.c_str();
+  params.params.sub_type_len = sub_type.size();
 }
 ```
+`ListPhysicalDevice` will encode the subdevice type to the device name
+```cpp
+Status PluggableDeviceFactory::ListPhysicalDevices(std::vector<string>* devices) {
+  se::Platform* platform = se::MultiPlatformManager::PlatformWithName(platform_name_);
+  for(int i = 0; i < platform->VisibleDeviceCount(); i++) {
+    const string device_name = strcat("/physical_device:", device_type_, "/", sub_device_type, ":", i);
+    devices->push_back(device_name);
+  }
+  return Status::OK();
+}
+```
+
 ### Device Creation
 
 `PluggableDeviceFactory` is introduced to create the `PluggableDevice`, following the [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h) design pattern. To support existing GPU programs running on a new device without user changing the code, plugin authors can register "GPU" string as the device type through `SE_InitializePlugin` and then TensorFlow proper will register the `PluggableDevice` as "GPU" name with higher priority than the default GPU device.    

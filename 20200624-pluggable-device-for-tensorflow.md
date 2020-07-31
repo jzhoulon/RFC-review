@@ -188,11 +188,7 @@ TensorFlow proper needs to be extended to support a new class `PluggableDevice` 
 
 Two sets of classes need to be defined in TensorFlow proper. 
 * Set 1: `PluggableDevice` related classes 
-   * class `PluggableDevice`:  a class represents a set of new third-party devices, its device_type attribute describes what kind of device this is. it can be "GPU" or other device type string. it also has an attribute: subdevice_type, subdevice_type is for low-level specialization of GPU device.
-     * 
-
-
-its device_type attribute (counter part of DEVICE_GPU, DEVICE_CPU) should be seperated from front-end visible device type name("GPU") to avoid kernel registration conflict with exsiting GPU(CUDA) kernels. it can be an alternative string registered from plugin, or "PLUGGABLE_" + device type(front-end visible device type registered through `SE_InitializePlugin`) as the device_type attribute, depending on StreamExecutor C API and kernel registration  C API design. For the second option(adding "PLUGGABLE_" prefix), Kernel registration C API needs to add the "PLUGGABLE_" prefix to the registered device type so this device_type attribute can be transparently to the plugin authors. For example, plugin authors provide a "GPU" name through `SE_InitializePlugin` and register the kernels to the "GPU" name through `TF_NewKernelBuilder` in plugin side, and TensorFlow Proper takes the "GPU" as the name for Device registration and makes the "PLUGGABLE_GPU" as the device_type attribute (counter part of DEVICE_GPU, DEVICE_CPU) for PluggableDevice. 
+   * class `PluggableDevice`: a class represents a set of new third-party devices, its device_type attribute describes what kind of device this is. it can be "GPU" or other device type string. it also has an attribute: subdevice_type, subdevice_type is for low-level specialization of GPU device. It will be part of kernel dispatch key to avoid conflict issue with exiting GPU(CUDA) kernels. The subdevice_type is also used to check whether there is some CUDA specific logic code in grappler and common runtime when the device type is "GPU".
    * class `PluggableDeviceFactory`: a device factory to create the PluggableDevice
    * class `PluggableDeviceBFCAllocator`: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.It extends the BFC algorithm, counter part of GPUBFCAllocator.
    * class `PluggableDeviceAllocator`: an allocator that wraps a PluggableDevice allocator.
@@ -240,7 +236,7 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 This RFC shows an example of kernel registration for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
 
-To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a device type(such as "GPU") as well as a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the device.
+To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a device type(such as "GPU") as well as a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the GPU device.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...

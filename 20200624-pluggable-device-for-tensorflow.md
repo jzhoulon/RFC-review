@@ -11,7 +11,7 @@
 
 Implement a pluggable device mechanism which allows to run existing TensorFlow programs on a new device without user changing the code.  Users only need to install a plugin in a specified directory, and the mechanism is able to discover and plug in the capabilities offered by the plugin. 
 
-This RFC is based on the Modular TensorFlow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the TensorFlow design to plugin capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
+This RFC is based on the Modular TensorFlow  [RFC](https://github.com/tensorflow/community/pull/77), which aims to extend the TensorFlow design to plug in capabilities like adding a new device support.  The modular device interface is based on StreamExecutor C API [RFC](https://github.com/tensorflow/community/pull/257). 
 
 ## **Motivation**
 
@@ -33,22 +33,22 @@ This RFC extends the TensorFlow device class hierarchy to add a standardized plu
 <img src=20200624-pluggable-device-for-tensorflow/design_overview.png>
 </div>
 
-* `PluggableDevice` is defined in TensorFlow proper which inherits from [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h).It is built on top of  StreamExecutor C++ interface to manage `PluggableDevice`’s key abstractions like StreamExecutor, stream, memory and event.
+* `PluggableDevice` is defined in TensorFlow proper which inherits from [LocalDevice](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/common_runtime/local_device.h). It is built on top of  StreamExecutor C++ interface and manages `PluggableDevice`’s key abstractions like StreamExecutor, stream, memory and event.
 
-* `PluggableDeviceExecutor` implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) and is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)). 
+* `PluggableDeviceExecutor` is built on top of StreamExecutor C API (addressed in [RFC](https://github.com/tensorflow/community/pull/257)), implements [StreamExecutor](https://github.com/tensorflow/tensorflow/blob/e5023a1738cce7efcdf9d87863b85c80ab2f8c9e/tensorflow/stream_executor/stream_executor_pimpl.h#L73) . 
 
-* `PluggableDevice Implementation` is inside the TensorFlow plugin, which provides those C functions implementation defined in the StreamExecutor C API.
+* `PluggableDeviceExecutor Implementation` is inside the TensorFlow plugin, which provides those C functions implementation defined in the StreamExecutor C API.
 
 The pluggable device mechanism contains device discovery and creation process which creates a `PluggableDevice` object and `PluggableDeviceExecutor` object for each pluggable device. 
 
-With the RFC, existing TensorFlow GPU programs can run on a plugged device without the user changing the code. The Diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
+With the RFC, existing TensorFlow GPU programs can run on a plugged device without user changing the code. The Diagram 2 describes the workflow of TensorFlow with device plugin, it shows how a simple GPU program runs on the pluggable device.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/gpu_example.png>
 </div>
 
 ### Supported user scenarios of PluggableDevice 
 
-This topic describes the user scenarios that are supported/unsupported in PluggableDevice.  
+This section describes the user scenarios that are supported/unsupported for PluggableDevice.  
 * **Supported scenario**: Single PluggableDevice registered as "GPU" device type  
   In the case of installing one plugin that registers its PluggableDevice as "GPU" device type, the default GPUDevice will be invalid when the plugin is loaded. When user specifies the "GPU" device for ops under `with tf.device("gpu:0")`, PluggableDevice registered will be selected to run those ops.
 <div align="center">
@@ -56,19 +56,19 @@ This topic describes the user scenarios that are supported/unsupported in Plugga
 </div>  
 
 * **Supported scenario**: Single PluggableDevice registered as a new device type.  
-  In the case of installing one plugin that registers its PluggableDevice as a new device type, e.g., "XPU" device, user can speficies the "XPU" device for ops under `with tf.device("xpu:0")`, PluggableDevice registered will be selected to run those ops.
+  In the case of installing one plugin that registers its PluggableDevice as a new device type, e.g., "XPU" device type, user can speficies the "XPU" device for ops under `with tf.device("xpu:0")`, PluggableDevice registered will be selected to run those ops.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario2.png>
 </div>
 
 * **Supported scenario**: Multiple PluggableDevices registered as different device types.   
-  In the case of installing multiple plugins that registers PluggableDevice as different device types, e.g., one is registered as "GPU" device and another is registered as "XPU" device, these PluggableDevices can be registered successfully and user can specify the device type to run ops on different hardware.
+  In the case of installing multiple plugins that register PluggableDevices as different device types, e.g., one is registered as "GPU" device type and another is registered as "XPU" device type, these PluggableDevices can be registered successfully and user can specify the device type to run ops on different hardware.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario3.png>
 </div>
 
 * **Non-Supported scenario**: Multiple PluggableDevices registered as the same device type.  
-  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device, these plugins's initialization will fail due to conflict. User needs to select which platform they want to use(either unloads the conflicting plugin or reconfigures the plugin with python API).
+  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device type, these plugins's initialization will fail due to registration conflict. User needs to select which platform they want to use(either unloads the conflicting plugin or reconfigures the plugin with python API).
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario4.png>
 </div>

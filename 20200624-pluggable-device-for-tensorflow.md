@@ -169,14 +169,17 @@ The section below shows some pseudo code to introduce some extensions inside the
      ...
    }  // create StreamExecutor
 ```
-3. `PluggableDevicePlatform` is responsible for the StreamExecutor creation. It creates an `SE_StreamExecutor` and `SE_Device` object through create_stream_executor and create_device which are registered in the `SE_Platform`. Then `PluggableDeviceExecutor` is constructed with `SE_StreamExecutor` and `SE_Device` object.   
+3. `PluggableDevicePlatform` is responsible for the StreamExecutor creation. It creates an `SP_StreamExecutor` and `SP_Device` object through create_stream_executor and create_device which are registered in the `SE_Platform`. Then `PluggableDeviceExecutor` is constructed with `SP_StreamExecutor` and `SP_Device` object.   
 ```cpp
    StreamExecutor* PluggableDevicePlaform::ExeutorForDevice(int device_id） {
     auto config = get_plugin_config(device_id);
     SE_Options* se_option = get_se_option(device_id);
-    SE_StreamExecutor* se= platform_->create_stream_executor();
-    SE_Device* sd = platform_->create_device(se_options)
-    auto executor = absl::make_unique<StreamExecutor>(this, absl::make_unique<PluggableDeviceExecutor>(config, se, sd));
+    TF_Status* status  = TF_NewStatus();
+    SP_StreamExecutor* se = new SP_StreamExecutor{ SP_STREAMEXECUTOR_STRUCT_SIZE };
+    platform_->create_stream_executor(se, status); // create SP_StreamExecutor
+    SP_Device* se_device = new SP_Device{ SP_DEVICE_STRUCT_SIZE };
+    platform_->create_device(se_device, se_options, status);//create SP_Device
+    auto executor = absl::make_unique<StreamExecutor>(this, absl::make_unique<PluggableDeviceExecutor>(config, se, se_device));
     return std::move(executor);
    }
 ```
@@ -195,37 +198,34 @@ Two sets of classes need to be defined in TensorFlow proper.
    * class `PluggableDeviceContext`: a wrapper of pluggable device specific context that can be passed to OpKernels.
 * Set 2: `PluggableDevicePlatform` related classes 
    * class `PluggableDevicePlatform`: PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SE_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
-   * class `PluggableDeviceExecutor`: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SE_StreamExecutor* executor_ and SE_Device* device_ whose member can be accessed in both TensorFlow proper and device plugins.
-   * class `PluggableDeviceStream`: wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SE_Stream which is treated as an opaque type to TensorFlow,  whose structure is created by the device plugin.  
+   * class `PluggableDeviceExecutor`: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SP_StreamExecutor* executor_ and SP_Device* device_ whose member can be accessed in both TensorFlow proper and device plugins.
+   * class `PluggableDeviceStream`: wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SP_Stream which is treated as an opaque type to TensorFlow,  whose structure is created by the device plugin.  
    * class `PluggableDeviceTimer`: wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
    * class `PluggableDeviceEvent`: wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
 
 **TensorFlow Plugin**
 
 Plugin authors need to provide those C functions implementation defined in StreamExecutor C API . 
-*  `SE_StreamExecutor` is defined as struct in the C API, both sides(TensorFlow proper and plugins) can access its members. Plugin creates the SE_StreamExecutor and registers its C API implementations to the SE_StreamExecutor.  
+* `SP_StreamExecutor` is defined as struct in the C API, both sides(TensorFlow proper and plugins) can access its members. TensorFlow proper creates a SP_StreamExecutor object and pass it to the plugin, then plugin fills it with its C API implementations.  
 ```cpp
-   SE_StreamExecutor* create_stream_executor(TF_Status* status) {
-     SE_StreamExecutor* se_nfs = new SE_StreamExecutor{ SE_STREAMEXECUTOR_STRUCT_SIZE };
+   void create_stream_executor(SP_StreamExecutor* se, TF_Status* status) {
      se->memcpy_from_host = my_device_memory_from_host_function;
      se->allocate = my_allocate_function;
      …
    }//Init device
 ```
-* `SE_Device` is defined as struct in the C API, both sides(TensorFlow proper and plugins) can access its members. Plugin creates the SE_Device and fills its device opaque handle and device name to the SE_Device.
+* `SP_Device` is defined as struct in the C API, both sides(TensorFlow proper and plugins) can access its members. TensorFlow proper creates a SP_Device with device ordinal and plugin fills the corresponding device opaque handle and device name to the SP_Device.
 ```cpp
-  SE_Device* create_device(SE_Options* options, TF_Status* status) {
-    SE_Device* se = new SE_Device( SE_DEVICE_STRUCT_SIZE );
-    se->device_handle = get_my_device_handle();
+   create_device(SP_Device* device, SE_Options* options, TF_Status* status) {
+    device->device_handle = get_my_device_handle(SE_Options);
     ...
     return se;
-  }
+   }
 ```
-* `SE_Stream` is defined in plugin and treated as an opaque struct in TensorFlow proper. 
+* `SP_Stream` is defined in plugin and treated as an opaque struct in TensorFlow proper. 
 ```cpp
-  void create_stream(SE_Device* executor, SE_Stream* stream, TF_Status*) {
-    *stream = new SE_Stream_st();
-    (*stream)->stream_handle = create_my_stream_handle(executor);
+  void create_stream(SP_Device* device, SP_Stream* stream, TF_Status*) {
+    (stream)->stream_handle = create_my_stream_handle(device);
     ..
   }
 ```
@@ -260,10 +260,10 @@ void InitKernelPlugin() {
 The following code shows a convolution kernel implementation using the stream handle. The streams are created during the pluggable device creation. The placer decides which device to use for each OP in the graph. Then the streams associated with the device are used to construct the OpKernelContext for the op computation during the graph execution.
 ```cpp
 void Conv_Compute(TF_OpKernelContext*) {
-  TF_GetInput(context, input_index, &input, &status);
+  (context, input_index, &input, &status);
   TF_GetInput(context, filter_index, &filter, &status);
   auto output = TF_AllocateOutput(context, output_index, TF_Float32, dims, num_dims, len, status);
-  SE_Stream se_stream = TF_GetStream(TF_OpKernelContext);
+  SP_Stream* se_stream = TF_GetStream(TF_OpKernelContext);
   auto native_stream = static_cast<native_stream_type>(se_stream->stream_handle);
   my_conv_impl(input, filter, output, native_stream);
 }

@@ -193,17 +193,17 @@ Two sets of classes need to be defined in TensorFlow proper.
 * Set 1: `PluggableDevice` related classes 
    * class `PluggableDevice`: a class represents a set of new third-party devices, its device_type attribute describes what kind of device this is. it can be "GPU" or other device type string. it also has an attribute: subdevice_type, subdevice_type is for low-level specialization of GPU device. It will be part of kernel dispatch key to avoid conflict issue with exiting GPU(CUDA) kernels. The subdevice_type is also used to check whether there is some CUDA specific logic code in grappler and common runtime when the device type is "GPU".
    * class `PluggableDeviceFactory`: a device factory to create the PluggableDevice
-   * class `PluggableDeviceBFCAllocator`: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm.It extends the BFC algorithm, counter part of GPUBFCAllocator.
+   * class `PluggableDeviceBFCAllocator`: a PluggableDevice memory allocator that implements a ‘best fit with coalescing’ algorithm. It extends the BFC algorithm, counter part of GPUBFCAllocator.
    * class `PluggableDeviceAllocator`: an allocator that wraps a PluggableDevice allocator.
    * class `PluggableDeviceHostAllocator`: allocator for pinned CPU RAM that is made known to PluggableDevice for the purpose of efficient DMA with PluggableDevice.
    * class `PluggableDeviceEventMgr`: an object to keep track of pending Events in the StreamExecutor streams.
    * class `PluggableDeviceContext`: a wrapper of pluggable device specific context that can be passed to OpKernels.
 * Set 2: `PluggableDevicePlatform` related classes 
-   * class `PluggableDevicePlatform`: PluggableDevice-specific platform, its platform name is "PluggableDevice", it contains a C struct: SP_Platform* platform_ which is its internal implementation and as the C interface registered by device plugin.
-   * class `PluggableDeviceExecutor`: PluggableDevice-platform implementation of the platform-agnostic StreamExecutorInterface, it contains C structs: SP_StreamExecutor* executor_ and SP_Device* device_ whose member can be accessed in both TensorFlow proper and device plugins.
-   * class `PluggableDeviceStream`: wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SP_Stream which is treated as an opaque type to TensorFlow,  whose structure is created by the device plugin.  
-   * class `PluggableDeviceTimer`: wraps an opaque handle: SE_Timer to satisfy the platform-independent TimerInterface.
-   * class `PluggableDeviceEvent`: wraps an opaque handle: SE_Event to satisfy the platform-independent EventInterface.
+   * class `PluggableDevicePlatform`: PluggableDevice-specific platform, its platform name is registered from plugin through `SE_InitializePlugin`, the platform object contains a C struct: SP_Platform* platform_, which is its internal implementation and as the C interface registered by device plugin.
+   * class `PluggableDeviceExecutor`: The PluggableDevice implementation of the  StreamExecutorInterface functionality, it contains two C structs: SP_StreamExecutor* executor_ and SP_Device* device_ , which as the StreamExecutor C interface registered by device plugin. 
+   * class `PluggableDeviceStream`: wraps a StreamHandle in order to satisfy the platform-independent StreamInterface. It returns SP_Stream which is treated as an opaque type to TensorFlow,  whose structure is defined by the device plugin.  
+   * class `PluggableDeviceTimer`: wraps an opaque handle: SP_Timer to satisfy the platform-independent TimerInterface.
+   * class `PluggableDeviceEvent`: wraps an opaque handle: SP_Event to satisfy the platform-independent EventInterface.
 
 **TensorFlow Plugin**
 
@@ -234,8 +234,8 @@ Plugin authors need to provide those C functions implementation defined in Strea
 
 ### PluggableDevice kernel registration
 
-This section shows an example of kernel registration for PluggableDevice. Kernel and op registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
-
+This section shows an example of kernel registration for PluggableDevice. Kernel registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
+StreamExecutor 
 To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a device type(such as "GPU") as well as a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the device.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {

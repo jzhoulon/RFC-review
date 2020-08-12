@@ -143,7 +143,7 @@ Status PluggableDeviceFactory::ListPhysicalDevices(std::vector<string>* devices)
   return Status::OK();
 }
 ```
-`GetDeviceDetails` will retrieve the physical device name of the hardware from plugin.  
+`GetDeviceDetails` retrieves the physical device name of the hardware from plugin.  
 ```
 Status PluggableDeviceFactory::GetDeviceDetails(int device_index, std::unordered_map<string, string>* details) {
  se::Platform* platfom = se::MultiPlatformManager::PlatformWithName(sub_device_type_);

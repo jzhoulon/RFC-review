@@ -76,28 +76,29 @@ This section describes the user scenarios that are supported/unsupported for Plu
 ### Front-end Mirroring mechanism
 This section describes the front-end mirroring mechanism for python users, pointing at previous user scenarios.
 * **device type**  
-   Device type is user visible and controllable. User can specify the device type for the ops. e.g, gpu, xpu is the device type
+   Device type is user visible and controllable. User can specify the device type for the ops. e.g, specify device type as "gpu", "xpu".
    ```
    >> with tf.device("/gpu:0"):
       ...
    >> with tf.device("/xpu:0"):
       ...
    ```
-   user need to manually select a platform when multiple plugins register the same device type, or the plugins initilaization will fail due to device type conflict. e.g, multiple plugins register the "GPU" device type and user set a higher priority for the plugin.
+   user need to manually select a platform when multiple plugins register the same device type, or the plugins initilaization will fail due to device type conflict. e.g, when multiple plugins register the "GPU" device type ,user need to set a higher priority for the plugin.
    ```
    >> tf.load_plugin_with_highest_priority(path_to_plugin_lib)
    >> with tf.device("/gpu:0")
       ...
    ```
 * **subdevice type**  
-   Subdevice type is user visible but not controllable. User can query the subdevice type of the device if he wants to know whether the GPU device is NVIDIA_GPU or INTEL_GPU
+   Subdevice type is user visible but not controllable. User can query the subdevice type of the device if he wants to know whether the GPU device is NVIDIA_GPU or INTEL_GPU, through [tf.config.experimental.list_physical_devices()](https://www.tensorflow.org/api_docs/python/tf/config/list_physical_devices).
+
    ```
    >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
    >> print(gpu_device)
    [PhysicalDevice(name = `physical_device:GPU:0`), device_type = `GPU`, subdevice_type = `INTEL_GPU`]
    ```
 * **real device name**  
-   real device name is user visible but not controllable. User can query the real device name(e.g. "Titan V") of the specified device instance through [tf.config.experimental.get_device_details()](https://www.tensorflow.org/api_docs/python/tf/config/experimental/get_device_details).
+   Real device name is user visible but not controllable. User can query the real device name(e.g. "Titan V") for the specified device instance through [tf.config.experimental.get_device_details()](https://www.tensorflow.org/api_docs/python/tf/config/experimental/get_device_details).
    ```
    >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
    >> if gpu_device:

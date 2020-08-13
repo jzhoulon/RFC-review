@@ -129,7 +129,7 @@ Plugin authors need to implement `SE_InitializePlugin` and provide the necessary
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   int32_t visible_device_count = get_plugin_device_count();
   
-  std::string name = "My_GPU"; //StreamExecutor platform name && subdevice type
+  std::string name = "X_GPU"; //StreamExecutor platform name && subdevice type
   std::string type = "GPU"; // device type
 
   params.params.id = plugin_id_value;
@@ -281,20 +281,20 @@ Plugin authors need to provide those C functions implementation defined in Strea
 ### PluggableDevice kernel registration
 
 This section shows an example of kernel registration for PluggableDevice. Kernel registration and implementation API is addressed in a separate [RFC](https://github.com/tensorflow/community/blob/master/rfcs/20190814-kernel-and-op-registration.md). 
-To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a device type(such as "GPU") as well as a subdevice type(such as "INTEL_GPU") to TensorFlow proper for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the device.
+To avoid kernel registration conflict with existing GPU(CUDA) kernels, plugin author needs to provide a device type(such as "GPU") as well as a subdevice type(such as "X_GPU") to TensorFlow proper for kernel registration and dispatch. The device type indicates the device the kernel runs on, the subdevice type is for low-level specialization of the device.
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {
   ...
   std::string type = "GPU" // front-end visible device type
   params.params.type = type.c_str();
-  std::string name = "INTEL_GPU"; // low-level specialization device type
+  std::string name = "X_GPU"; // low-level specialization device type
   params.params.type = name.c_str();
   ...
 }
 
 void InitKernelPlugin() {
   TF_KernelBuilder* builder = TF_NewKernelBuilder(/*op_name*/"Convolution", "GPU", //"GPU" is device type
-      "INTEL_GPU", &Conv_Create, &Conv_Compute, &Conv_Delete); // "INTEL_GPU" is sub device type
+      "X_GPU", &Conv_Create, &Conv_Compute, &Conv_Delete); // "X_GPU" is sub device type
   TF_Status* status = TF_NewStatus();
   TF_RegisterKernelBuilder(/*kernel_name*/"Convolution", builder, status);
   if (TF_GetCode(status) != TF_OK) { /* handle errors */ }

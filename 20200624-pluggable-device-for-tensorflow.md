@@ -94,7 +94,7 @@ This section describes the device mapping mechanism for python users, pointing a
     >> with tf.device("/gpu:0"):
     >>   .. // place ops on PluggableDevice(X GPU)
     ```
-  * **Option 2** both visible, but plugged gpu is default, user can set the device mapping  
+  * **Option 2**: both visible, but plugged gpu is default, user can set the device mapping  
     Both plugged gpu device and default gpu device are visible, but only one gpu can work at the same time, plugged gpu device is default enabled(with higher priority), if users want to use NVIDIA GPU, they need to call device mapping API(set_sub_device_mapping()) to switch to CUDA device.
     ```
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)

@@ -83,7 +83,7 @@ This section describes the device mapping mechanism for python users, pointing a
    >> with tf.device("/xpu:0"):
       ...
    ```
-* **Device mapping** 
+* **Device mapping**   
    In the case of two GPUs in the same system, e.g. NVIDIA GPU + X GPU and installing the X GPU plugin.
   * **Option 1**: override CUDA device, only plugged gpu device visible  
     Only plugged gpu device is visible, PluggableDevice(X GPU) overrides the default GPUDevice(CUDA GPU). If users want to use CUDA GPU, they need to manually uninstall the plugin.

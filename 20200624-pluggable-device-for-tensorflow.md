@@ -50,7 +50,7 @@ With the RFC, existing TensorFlow GPU programs can run on a plugged device witho
 
 This section describes the user scenarios that are supported/unsupported for PluggableDevice.  
 * **Supported scenario**: Single PluggableDevice registered as "GPU" device type  
-  In the case of installing one plugin that registers its PluggableDevice as "GPU" device type, the default GPUDevice will be invalid when the plugin is loaded. When user specifies the "GPU" device for ops under `with tf.device("gpu:0")`, PluggableDevice registered will be selected to run those ops.
+  In the case of installing one plugin that registers its PluggableDevice as "GPU" device type, the default GPUDevice will be overrided by PluggableDevice when the plugin is loaded. When user specifies the "GPU" device for ops under `with tf.device("gpu:0")`, PluggableDevice registered will be selected to run those ops.
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario1.png>
 </div>  
@@ -68,7 +68,7 @@ This section describes the user scenarios that are supported/unsupported for Plu
 </div>
 
 * **Non-Supported scenario**: Multiple PluggableDevices registered as the same device type.  
-  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device type, these plugins's initialization will fail due to registration conflict. User needs to manually select which platform they want to use(either unloads the conflicting plugin or reconfigures the plugin with python API).
+  In the case of installing multiple plugins that registers PluggableDevice as the same device type, e.g., more than one plugin registers its PluggableDevice as "GPU" device type, these plugins's initialization will fail due to registration conflict. Users need to manually select which platform they want to use(either unloads the conflicting plugin or reconfigures the plugin with python API).
 <div align="center">
 <img src=20200624-pluggable-device-for-tensorflow/scenario4.png>
 </div>
@@ -85,7 +85,7 @@ This section describes the device mapping mechanism for python users, pointing a
    ```
 * **Device mapping** 
    In the case of two GPUs in the same system, e.g. NVIDIA GPU + X GPU and installing the X GPU plugin.
-  * **Option 1**: override CUDA device, only plugged GPU device visible
+  * **Option 1**: override CUDA device, only plugged gpu device visible  
     Only plugged gpu device is visible, PluggableDevice(X GPU) overrides the default GPUDevice(CUDA GPU). If users want to use CUDA GPU, they need to manually uninstall the plugin.
     ```
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
@@ -94,7 +94,7 @@ This section describes the device mapping mechanism for python users, pointing a
     >> with tf.device("/gpu:0"):
     >>   .. // place ops on PluggableDevice(X GPU)
     ```
-  * **Option 2**
+  * **Option 2** both visible, but plugged gpu is default, user can set the device mapping  
     Both plugged gpu device and default gpu device are visible, but only one gpu can work at the same time, plugged gpu device is default enabled, if users want to use NVIDIA GPU, they need to call device mapping API(set_sub_device_mapping()) to switch to CUDA gpu device.
    ```
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
@@ -123,7 +123,7 @@ This section describes the device mapping mechanism for python users, pointing a
 
 Upon initialization of TensorFlow, it uses platform independent `LoadLibrary()` to load the dynamic library. The plugin library should be installed to the default plugin directory "…python_dir.../site-packages/tensorflow-plugins". The modular tensorflow [RFC](https://github.com/tensorflow/community/pull/77) describes the process of loading plugins. 
 
-During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the plugin to instantiate a StreamExecutor platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and registers the platform to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper gets a device type and a subdevice type from plugin through `SE_InitializePlugin` and then registers the `PluggableDeviceFactory`with the registered device type. The device type string will be used to access PluggableDevice with tf.device() in python layer. The subdevice type is used for low-level specialization of GPU device(kernel, StreamExecutor, common runtime, grapper, placer..). If the user cares whether he is running on NVIDIA GPU or X GPU(Intel GPU, Amd GPU..), he can call python API (such as `tf.config.list_physical_devices`) to get the subdevice type for identification. user can also use `tf.config.get_device_details` to get the real device name(e.g. "TITAN V")for the specified device.  
+During the plugin library initialization, TensorFlow proper calls the `SE_InitializePlugin` API (part of StreamExecutor C API) to retrieve nescessary informations from the plugin to instantiate a StreamExecutor platform([se::platform](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/platform.h#L93) class) and registers the platform to a global object [se::MultiPlatformManager](https://github.com/tensorflow/tensorflow/blob/cb32cf0f0160d1f582787119d0480de3ba8b9b53/tensorflow/stream_executor/multi_platform_manager.h#L82), TensorFlow proper gets a device type and a subdevice type from plugin through `SE_InitializePlugin` and then registers the `PluggableDeviceFactory`with the registered device type. The device type string will be used to access PluggableDevice with tf.device() in python layer. The subdevice type is used for low-level specialization of GPU device(kernel, StreamExecutor, common runtime, grapper, placer..). If the users care whether they are running on NVIDIA GPU or X GPU(Intel GPU, Amd GPU..), they can call python API (such as `tf.config.list_physical_devices`) to get the subdevice type for identification. user can also use `tf.config.get_device_details` to get the real device name(e.g. "TITAN V")for the specified device.  
 Plugin authors need to implement `SE_InitializePlugin` and provide the necessary informations:  
 ```cpp
 void SE_InitializePlugin(SE_PlatformRegistrationParams* params, TF_Status* status) {

@@ -95,12 +95,13 @@ This section describes the front-end mirroring mechanism for python users, point
          .. // place ops on PluggableDevice(Intel GPU)
     ```
   * **Option 2**
+    Both plugged gpu device and default gpu device is visible, but only one GPU can work at the same time, plugged GPU device is default enabled, if user want to use CUDA device, he need to call mirroring API(set_sub_device_mapping()) to switch to CUDA device.
    ```
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
     >> print(gpu_device)
     [PhysicalDevice(name = `physical_device:GPU:0`), device_type = `GPU`, subdevice_type = `INTEL_GPU`, enabled]
     [PhysicalDevice(name = `physical_device:GPU:0`), device_type = `GPU`, subdevice_type = `NVIDIA_GPU`, not-enabled]
-    >> tf.config.set_subdevice("NVIDIA_GPU")
+    >> tf.config.set_subdevice_mapping("NVIDIA_GPU")
     >> with tf.device("/gpu:0"):
          .. // place ops on GPUDevice(NVIDIA GPU)
    ```

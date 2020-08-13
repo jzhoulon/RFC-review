@@ -76,7 +76,7 @@ This section describes the user scenarios that are supported/unsupported for Plu
 ### Device mapping mechanism
 This section describes the device mapping mechanism for python users, pointing at previous user scenarios.
 * **Device type && Subdevice type**  
-   Device type is user visible. User can specify the device type for the ops. e.g, "gpu", "xpu", "cpu". Subdevice type is user visible and user can specify which subdevice to use for the device type(mirroring), e.g.("NVIDIA_GPU", "INTEL_GPU", "AMD_GPU").
+   Device type is user visible. User can specify the device type for the ops. e.g, "gpu", "xpu", "cpu". Subdevice type is user visible and user can specify which subdevice to use for the device type(device mapping), e.g.("NVIDIA_GPU", "INTEL_GPU", "AMD_GPU").
    ```
    >> with tf.device("/gpu:0"):
       ...

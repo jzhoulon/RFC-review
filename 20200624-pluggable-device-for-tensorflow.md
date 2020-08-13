@@ -101,6 +101,7 @@ This section describes the device mapping mechanism for python users, pointing a
     >> print(gpu_device)
     [PhysicalDevice(name = `physical_device:GPU:0`), device_type = `GPU`, subdevice_type = `X_GPU`, enabled]
     [PhysicalDevice(name = `physical_device:GPU:0`), device_type = `GPU`, subdevice_type = `NVIDIA_GPU`, disabled]
+ 
     >> tf.config.set_subdevice_mapping("NVIDIA_GPU")
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
     >> print(gpu_device)

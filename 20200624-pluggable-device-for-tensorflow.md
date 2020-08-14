@@ -84,11 +84,11 @@ This section describes the device string for python users, pointing at previous 
       ...
    ```
 * **Subdevice type**   
-   Subdevice type is user visible, differentiating gpu devices between different vendors. Users can query the subdevice type of the device if they want to know whether the GPU device is "NVIDIA_GPU", "INTEL_GPU" or "AMD_GPU", through [list_physical_devices](https://www.tensorflow.org/api_docs/python/tf/config/list_physical_devices).   
+   Subdevice type is user visible, differentiating gpu devices between different hardware vendors. Users can query the subdevice type if they want to know whether the GPU device is "NVIDIA_GPU", "INTEL_GPU" or "AMD_GPU", by invoking [list_physical_devices](https://www.tensorflow.org/api_docs/python/tf/config/list_physical_devices).   
    
-   This RFC propose that plugged gpu device will override the default gpu device. So when users invoke `list_physical_devices("GPU")`, they can only see the plugged gpu device. If users want to use default GPU device(CUDA), they need to manually uninstall the plugin.  
+   This RFC proposes that plugged gpu device will override the default gpu device. When users invoke `list_physical_devices("GPU")`, they can only see the plugged gpu device. If users want to use default GPU device(CUDA), they need to manually uninstall the plugin.  
    
-   For example, in the case of two GPUs in the same system, e.g. NVIDIA GPU + X GPU and installing the X GPU plugin, only X GPU is visible.
+   For example, in the case of two GPUs in the same system, e.g. NVIDIA GPU + X GPU and installing the X GPU plugin, only X GPU is visible and usable. If users want to use Nvidia GPU, they need to uninstall the X GPU plugin.
     ```
     >> gpu_device = tf.config.experimental.list_physical_devices(`GPU`)
     >> print(gpu_device)
